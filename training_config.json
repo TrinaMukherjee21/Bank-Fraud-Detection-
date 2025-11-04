@@ -1,0 +1,58 @@
+{
+    "data_path": "Data/bs140513_032310.csv",
+    "test_size": 0.2,
+    "random_state": 42,
+    "cv_folds": 5,
+    "threshold_range": [0.3, 0.8, 0.05],
+    "feature_selection": true,
+    "hyperparameter_tuning": true,
+    "ensemble_models": true,
+    "save_plots": true,
+    "model_versioning": true,
+    
+    "advanced_features": {
+        "enable_customer_features": true,
+        "enable_category_features": true,
+        "enable_interaction_features": true,
+        "enable_time_features": true
+    },
+    
+    "sampling_strategy": {
+        "method": "SMOTEENN",
+        "contamination": 0.1
+    },
+    
+    "models_to_train": [
+        "XGBoost",
+        "LightGBM", 
+        "RandomForest",
+        "CatBoost"
+    ],
+    
+    "hyperparameter_search": {
+        "method": "RandomizedSearchCV",
+        "n_iter": 20,
+        "cv": 3,
+        "scoring": "f1"
+    },
+    
+    "evaluation_metrics": [
+        "accuracy",
+        "precision",
+        "recall",
+        "f1_score",
+        "roc_auc",
+        "pr_auc"
+    ],
+    
+    "model_selection_criteria": "f1_score",
+    
+    "output_settings": {
+        "save_model": true,
+        "save_plots": true,
+        "generate_report": true,
+        "model_directory": "model",
+        "plots_directory": "plots",
+        "reports_directory": "reports"
+    }
+}

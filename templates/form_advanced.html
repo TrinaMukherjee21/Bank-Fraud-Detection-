@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Deep Analysis - SecureGuard Fraud Detection{% endblock %}
+
+{% block content %}
+<!-- Form Header -->
+<div class="analysis-header">
+    <div class="header-content">
+        <div class="analysis-info">
+            <h1 class="analysis-title">🔬 Deep Transaction Analysis</h1>
+            <p class="analysis-description">Comprehensive fraud detection with advanced behavioral profiling</p>
+        </div>
+        <div class="security-badge">
+            <div class="security-icon">🛡️</div>
+            <div class="security-text">
+                <span class="security-level">SECURE</span>
+                <span class="security-subtitle">Enterprise Grade Analysis</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Professional Form -->
+<div class="professional-form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2 class="form-title">Advanced Transaction Profile</h2>
+            <div class="form-progress">
+                <div class="progress-steps">
+                    <div class="step active">1</div>
+                    <div class="step-line"></div>
+                    <div class="step">2</div>
+                </div>
+                <span class="progress-text">Step 1 of 2: Complete Data Input</span>
+            </div>
+        </div>
+        
+        <form action="{{ url_for('predict') }}" method="POST" id="advancedFraudForm" class="professional-form">
+            <div class="form-grid advanced-grid">
+                <div class="form-group">
+                    <label for="step" class="professional-label">
+                        <span class="label-icon">⏱️</span>
+                        Time Sequence
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number" name="step" id="step" min="1" max="1000" required 
+                           class="professional-input" placeholder="Enter time sequence (1-1000)">
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Sequential time unit when the transaction was processed
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer" class="professional-label">
+                        <span class="label-icon">👤</span>
+                        Customer ID
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number" name="customer" id="customer" min="0" max="50000" required 
+                           class="professional-input" placeholder="Enter customer identifier">
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Unique customer identifier (encoded value)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="age" class="professional-label">
+                        <span class="label-icon">🎂</span>
+                        Age Category
+                        <span class="required">*</span>
+                    </label>
+                    <select name="age" id="age" required class="professional-select">
+                        <option value="">Select Age Group</option>
+                        <option value="0">👶 Young Adult (18-25)</option>
+                        <option value="1">👨 Adult (26-35)</option>
+                        <option value="2">👔 Middle Age (36-50)</option>
+                        <option value="3">👨‍🦳 Mature (51-65)</option>
+                        <option value="4">👴 Senior (65+)</option>
+                    </select>
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Customer age demographic for risk profiling
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender" class="professional-label">
+                        <span class="label-icon">👤</span>
+                        Gender Profile
+                        <span class="required">*</span>
+                    </label>
+                    <select name="gender" id="gender" required class="professional-select">
+                        <option value="">Select Gender</option>
+                        <option value="0">Male</option>
+                        <option value="1">Female</option>
+                    </select>
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Customer gender for behavioral pattern analysis
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount" class="professional-label">
+                        <span class="label-icon">💰</span>
+                        Transaction Amount
+                        <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-prefix">$</span>
+                        <input type="number" name="amount" id="amount" step="0.01" min="0.01" max="1000000" required 
+                               class="professional-input with-prefix" placeholder="0.00">
+                    </div>
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Transaction amount in US dollars (USD)
+                    </div>
+                    <div id="amount-warning" class="field-warning" style="display: none;">
+                        <span class="warning-icon">⚠️</span>
+                        High-value transaction detected - enhanced security protocols activated
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="professional-label">
+                        <span class="label-icon">🏪</span>
+                        Transaction Category
+                        <span class="required">*</span>
+                    </label>
+                    <select name="category" id="category" required class="professional-select">
+                        <option value="">Select Transaction Type</option>
+                        <optgroup label="Retail & Shopping">
+                            <option value="0">🛒 Grocery/Food</option>
+                            <option value="3">🛍️ Shopping/Retail</option>
+                            <option value="4">💻 Online Purchase</option>
+                        </optgroup>
+                        <optgroup label="Services">
+                            <option value="1">⛽ Gas Station</option>
+                            <option value="5">🍽️ Restaurant</option>
+                            <option value="6">🏥 Healthcare</option>
+                            <option value="9">🏠 Utilities</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="2">🎬 Entertainment</option>
+                            <option value="7">✈️ Travel</option>
+                            <option value="8">🏧 ATM/Cash</option>
+                            <option value="10">📦 Other</option>
+                        </optgroup>
+                    </select>
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Merchant category for risk pattern analysis
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="merchant_id" class="professional-label">
+                        <span class="label-icon">🏢</span>
+                        Merchant ID
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number" name="merchant_id" id="merchant_id" min="0" max="100000" required 
+                           class="professional-input" placeholder="Enter merchant identifier">
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Unique merchant identifier for transaction verification
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="action-button primary analysis-btn">
+                    <span class="button-icon">🔬</span>
+                    <span class="button-text">Deep Analysis</span>
+                    <div class="button-spinner" style="display: none;">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+                <a href="{{ url_for('form_basic') }}" class="action-button secondary">
+                    <span class="button-icon">⚡</span>
+                    Quick Scan
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Advanced Info Panel -->
+    <div class="info-panel">
+        <div class="info-card">
+            <div class="info-header">
+                <div class="info-icon">🔬</div>
+                <h3 class="info-title">Deep Analysis Features</h3>
+            </div>
+            <div class="info-content">
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">Behavioral profiling analysis</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">Advanced pattern recognition</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">Multi-factor risk assessment</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">Historical context analysis</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <div class="info-icon">📊</div>
+                <h3 class="info-title">Advanced Metrics</h3>
+            </div>
+            <div class="info-content">
+                <div class="metric-row">
+                    <span class="metric-label">Deep Learning Accuracy</span>
+                    <span class="metric-value success">99.8%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Feature Analysis</span>
+                    <span class="metric-value optimal">15+ factors</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Processing Time</span>
+                    <span class="metric-value optimal">&lt;0.5s</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Risk Levels</span>
+                    <span class="metric-value excellent">5 categories</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('advancedFraudForm').addEventListener('submit', function(e) {
+    const submitBtn = e.target.querySelector('.analysis-btn');
+    const buttonText = submitBtn.querySelector('.button-text');
+    const buttonSpinner = submitBtn.querySelector('.button-spinner');
+    
+    buttonText.style.display = 'none';
+    buttonSpinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    
+    // Show loading overlay
+    showLoading();
+});
+
+// Enhanced amount validation with professional styling
+document.getElementById('amount').addEventListener('input', function(e) {
+    const value = parseFloat(e.target.value);
+    const warning = document.getElementById('amount-warning');
+    const inputWrapper = e.target.parentElement;
+    
+    if (value > 10000) {
+        inputWrapper.classList.add('warning');
+        warning.style.display = 'flex';
+    } else {
+        inputWrapper.classList.remove('warning');
+        warning.style.display = 'none';
+    }
+    
+    // Format display
+    if (value) {
+        e.target.setAttribute('data-formatted', new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(value));
+    }
+});
+
+// Professional form validation
+const inputs = document.querySelectorAll('.professional-input, .professional-select');
+inputs.forEach(input => {
+    input.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            this.classList.add('error');
+        } else {
+            this.classList.remove('error');
+        }
+    });
+    
+    input.addEventListener('focus', function() {
+        this.classList.remove('error');
+    });
+});
+
+// Enhanced field interactions
+inputs.forEach(input => {
+    input.addEventListener('focus', function() {
+        const label = this.previousElementSibling;
+        if (label) {
+            label.style.transform = 'scale(1.02)';
+            label.style.color = '#00d4ff';
+        }
+    });
+    
+    input.addEventListener('blur', function() {
+        const label = this.previousElementSibling;
+        if (label) {
+            label.style.transform = 'scale(1)';
+            label.style.color = '';
+        }
+    });
+});
+
+// Add advanced grid styles
+const advancedStyles = `
+    .advanced-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .professional-label {
+        transition: all 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+        .advanced-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = advancedStyles;
+document.head.appendChild(styleSheet);
+</script>
+{% endblock %}

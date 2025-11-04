@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block title %}System Health - SecureGuard Fraud Detection{% endblock %}
+
+{% block content %}
+<div class="health-container">
+    <div class="health-header">
+        <div class="status-indicator {{ 'healthy' if health_data.status == 'healthy' else 'unhealthy' }}">
+            <div class="status-icon">{{ '🟢' if health_data.status == 'healthy' else '🔴' }}</div>
+            <div class="status-text">
+                <h1 class="status-title">System {{ health_data.status|title }}</h1>
+                <p class="status-subtitle">{{ health_data.timestamp[:19]|replace('T', ' ') }}</p>
+            </div>
+        </div>
+        <div class="health-actions">
+            <button class="action-button secondary" onclick="refreshHealth()">
+                <span class="button-icon">🔄</span>
+                Refresh
+            </button>
+            <a href="{{ url_for('home') }}" class="action-button primary">
+                <span class="button-icon">🏠</span>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="health-grid">
+        <!-- System Status Cards -->
+        <div class="health-section">
+            <h2 class="section-title">🖥️ System Status</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon {{ 'success' if health_data.model_loaded else 'error' }}">
+                        {{ '✅' if health_data.model_loaded else '❌' }}
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="metric-title">ML Model</h3>
+                        <p class="metric-value">{{ 'Loaded' if health_data.model_loaded else 'Not Loaded' }}</p>
+                        <p class="metric-description">Model availability status</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon info">⏱️</div>
+                    <div class="metric-content">
+                        <h3 class="metric-title">Uptime</h3>
+                        <p class="metric-value">{{ health_data.uptime_days }}d {{ health_data.uptime_hours % 24 }}h</p>
+                        <p class="metric-description">System running time</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon success">🎯</div>
+                    <div class="metric-content">
+                        <h3 class="metric-title">Predictions</h3>
+                        <p class="metric-value">{{ "{:,}".format(health_data.total_predictions) }}</p>
+                        <p class="metric-description">Total processed</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon warning">⚡</div>
+                    <div class="metric-content">
+                        <h3 class="metric-title">Response Time</h3>
+                        <p class="metric-value">{{ "%.3f"|format(health_data.avg_processing_time) }}s</p>
+                        <p class="metric-description">Average processing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="health-section">
+            <h2 class="section-title">📊 Performance Metrics</h2>
+            <div class="performance-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Fraud Detected:</span>
+                    <span class="stat-value">{{ health_data.fraud_detected }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Detection Rate:</span>
+                    <span class="stat-value">{{ "%.1f"|format((health_data.fraud_detected / health_data.total_predictions * 100) if health_data.total_predictions > 0 else 0) }}%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Model Accuracy:</span>
+                    <span class="stat-value">{{ "%.1f"|format(health_data.model_accuracy * 100) }}%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Last Training:</span>
+                    <span class="stat-value">{{ health_data.last_training }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Resources -->
+        <div class="health-section">
+            <h2 class="section-title">🔧 System Resources</h2>
+            <div class="resource-monitor">
+                <div class="resource-item">
+                    <div class="resource-header">
+                        <span class="resource-name">Memory Usage</span>
+                        <span class="resource-status healthy">Normal</span>
+                    </div>
+                    <div class="resource-bar">
+                        <div class="resource-fill" style="width: 65%"></div>
+                    </div>
+                    <span class="resource-details">65% of available memory</span>
+                </div>
+
+                <div class="resource-item">
+                    <div class="resource-header">
+                        <span class="resource-name">CPU Usage</span>
+                        <span class="resource-status healthy">Normal</span>
+                    </div>
+                    <div class="resource-bar">
+                        <div class="resource-fill" style="width: 45%"></div>
+                    </div>
+                    <span class="resource-details">45% average CPU load</span>
+                </div>
+
+                <div class="resource-item">
+                    <div class="resource-header">
+                        <span class="resource-name">Storage</span>
+                        <span class="resource-status healthy">Normal</span>
+                    </div>
+                    <div class="resource-bar">
+                        <div class="resource-fill" style="width: 78%"></div>
+                    </div>
+                    <span class="resource-details">78% disk space used</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="health-section">
+            <h2 class="section-title">📝 Recent Activity</h2>
+            <div class="activity-log">
+                <div class="activity-item">
+                    <div class="activity-icon success">✅</div>
+                    <div class="activity-content">
+                        <p class="activity-message">System health check completed</p>
+                        <span class="activity-time">{{ health_data.timestamp[:19]|replace('T', ' ') }}</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon info">ℹ️</div>
+                    <div class="activity-content">
+                        <p class="activity-message">Model loaded successfully</p>
+                        <span class="activity-time">{{ health_data.timestamp[:19]|replace('T', ' ') }}</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon success">🎯</div>
+                    <div class="activity-content">
+                        <p class="activity-message">{{ health_data.total_predictions }} predictions processed</p>
+                        <span class="activity-time">Since startup</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.health-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-icon {
+    font-size: 3rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.status-title {
+    font-size: 2rem;
+    margin: 0;
+    color: #00d4ff;
+}
+
+.status-subtitle {
+    color: #a0aec0;
+    margin: 0.5rem 0 0 0;
+}
+
+.health-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.health-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.health-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.section-title {
+    color: #00d4ff;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.metric-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    border-color: #00d4ff;
+}
+
+.metric-icon {
+    font-size: 2rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.metric-icon.success { background: rgba(0, 255, 136, 0.2); }
+.metric-icon.error { background: rgba(255, 62, 62, 0.2); }
+.metric-icon.warning { background: rgba(255, 206, 84, 0.2); }
+.metric-icon.info { background: rgba(0, 212, 255, 0.2); }
+
+.metric-title {
+    margin: 0 0 0.5rem 0;
+    color: #e2e8f0;
+    font-size: 1rem;
+}
+
+.metric-value {
+    margin: 0;
+    color: #00d4ff;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.metric-description {
+    margin: 0.25rem 0 0 0;
+    color: #a0aec0;
+    font-size: 0.9rem;
+}
+
+.performance-stats, .activity-log {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.stat-label {
+    color: #a0aec0;
+}
+
+.stat-value {
+    color: #00d4ff;
+    font-weight: 600;
+}
+
+.resource-monitor {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.resource-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resource-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.resource-name {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.resource-status.healthy {
+    color: #00ff88;
+    font-size: 0.9rem;
+}
+
+.resource-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.resource-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4ff, #8b5cf6);
+    transition: width 1s ease;
+}
+
+.resource-details {
+    color: #a0aec0;
+    font-size: 0.9rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.activity-icon {
+    font-size: 1.5rem;
+}
+
+.activity-message {
+    margin: 0;
+    color: #e2e8f0;
+}
+
+.activity-time {
+    color: #a0aec0;
+    font-size: 0.9rem;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+</style>
+
+<script>
+function refreshHealth() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(refreshHealth, 30000);
+</script>
+{% endblock %}

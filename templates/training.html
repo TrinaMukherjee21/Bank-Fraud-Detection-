@@ -1,0 +1,983 @@
+{% extends "base.html" %}
+
+{% block title %}Training Dashboard - SecureGuard Fraud Detection{% endblock %}
+
+{% block content %}
+<!-- Training Header -->
+<div class="training-header">
+    <div class="header-content">
+        <div class="training-info">
+            <h1 class="training-title">🤖 Model Training Dashboard</h1>
+            <p class="training-description">Professional machine learning model training and management center</p>
+        </div>
+        <div class="training-actions">
+            <button class="action-button secondary" onclick="viewTrainingHistory()">
+                <span class="button-icon">📊</span>
+                Training History
+            </button>
+            <button class="action-button primary" onclick="startTraining()" id="start-training-btn">
+                <span class="button-icon">🚀</span>
+                Start Training
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Training Status -->
+<div class="status-container">
+    <div class="status-card">
+        <div class="status-header">
+            <h3 class="status-title">📈 Training Status</h3>
+            <div class="status-indicator {{ 'training' if training_status.is_training else 'ready' }}">
+                <span class="status-dot"></span>
+                <span class="status-text">{{ training_status.status }}</span>
+            </div>
+        </div>
+        
+        {% if training_status.is_training %}
+        <div class="progress-section">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ training_status.progress }}%"></div>
+                <span class="progress-text">{{ training_status.progress }}%</span>
+            </div>
+            <p class="current-step">{{ training_status.current_step }}</p>
+            {% if training_status.estimated_completion %}
+            <p class="eta">ETA: {{ training_status.estimated_completion }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if training_status.start_time %}
+        <div class="training-info-grid">
+            <div class="info-item">
+                <span class="info-label">Started:</span>
+                <span class="info-value">{{ training_status.start_time }}</span>
+            </div>
+            {% if training_status.results %}
+            <div class="info-item">
+                <span class="info-label">Best F1-Score:</span>
+                <span class="info-value">{{ "%.4f"|format(training_status.results.f1_score) }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Training Configuration -->
+<div class="training-content">
+    <div class="content-left">
+        <!-- Training Configuration -->
+        <div class="training-card">
+            <div class="card-header">
+                <h3 class="card-title">⚙️ Training Configuration</h3>
+                <button class="card-action" onclick="resetConfig()">Reset</button>
+            </div>
+            <div class="card-body">
+                <form id="training-config-form" class="config-form">
+                    <div class="config-section">
+                        <h4 class="section-title">Model Selection</h4>
+                        <div class="model-grid">
+                            <label class="model-option">
+                                <input type="checkbox" name="models" value="XGBoost" checked>
+                                <div class="model-card">
+                                    <span class="model-name">XGBoost</span>
+                                    <span class="model-desc">Gradient boosting framework</span>
+                                </div>
+                            </label>
+                            <label class="model-option">
+                                <input type="checkbox" name="models" value="LightGBM">
+                                <div class="model-card">
+                                    <span class="model-name">LightGBM</span>
+                                    <span class="model-desc">Fast gradient boosting</span>
+                                </div>
+                            </label>
+                            <label class="model-option">
+                                <input type="checkbox" name="models" value="RandomForest">
+                                <div class="model-card">
+                                    <span class="model-name">Random Forest</span>
+                                    <span class="model-desc">Ensemble of decision trees</span>
+                                </div>
+                            </label>
+                            <label class="model-option">
+                                <input type="checkbox" name="models" value="CatBoost">
+                                <div class="model-card">
+                                    <span class="model-name">CatBoost</span>
+                                    <span class="model-desc">Categorical boosting</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4 class="section-title">Training Parameters</h4>
+                        <div class="params-grid">
+                            <div class="param-group">
+                                <label for="test-size">Test Size:</label>
+                                <input type="range" id="test-size" name="test_size" min="0.1" max="0.4" step="0.05" value="0.2">
+                                <span class="param-value">0.2</span>
+                            </div>
+                            <div class="param-group">
+                                <label for="cv-folds">CV Folds:</label>
+                                <input type="range" id="cv-folds" name="cv_folds" min="3" max="10" step="1" value="5">
+                                <span class="param-value">5</span>
+                            </div>
+                            <div class="param-group">
+                                <label for="hyperparameter-tuning">
+                                    <input type="checkbox" id="hyperparameter-tuning" name="hyperparameter_tuning" checked>
+                                    Hyperparameter Tuning
+                                </label>
+                            </div>
+                            <div class="param-group">
+                                <label for="feature-selection">
+                                    <input type="checkbox" id="feature-selection" name="feature_selection" checked>
+                                    Feature Selection
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4 class="section-title">Advanced Options</h4>
+                        <div class="advanced-options">
+                            <label class="option-item">
+                                <input type="checkbox" name="save_plots" checked>
+                                <span class="option-text">Generate Training Plots</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="ensemble_models">
+                                <span class="option-text">Create Ensemble Model</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="model_versioning" checked>
+                                <span class="option-text">Model Versioning</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="generate_report" checked>
+                                <span class="option-text">Generate Training Report</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Training Logs -->
+        <div class="training-card">
+            <div class="card-header">
+                <h3 class="card-title">📝 Training Logs</h3>
+                <div class="card-actions">
+                    <button class="log-action" onclick="clearLogs()">Clear</button>
+                    <button class="log-action" onclick="downloadLogs()">Download</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="logs-container" id="training-logs">
+                    <div class="log-entry">
+                        <span class="log-time">{{ "now"|format_datetime }}</span>
+                        <span class="log-level info">INFO</span>
+                        <span class="log-message">Training dashboard initialized</span>
+                    </div>
+                    {% if training_status.is_training %}
+                    <div class="log-entry">
+                        <span class="log-time">{{ training_status.start_time }}</span>
+                        <span class="log-level info">INFO</span>
+                        <span class="log-message">Training process started</span>
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">{{ "now"|format_datetime }}</span>
+                        <span class="log-level info">INFO</span>
+                        <span class="log-message">{{ training_status.current_step }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content-right">
+        <!-- Model Performance -->
+        <div class="training-card">
+            <div class="card-header">
+                <h3 class="card-title">📊 Model Performance</h3>
+            </div>
+            <div class="card-body">
+                {% if training_status.results %}
+                <div class="performance-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Accuracy</div>
+                        <div class="metric-value">{{ "%.4f"|format(training_status.results.accuracy) }}</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" style="width: {{ (training_status.results.accuracy * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Precision</div>
+                        <div class="metric-value">{{ "%.4f"|format(training_status.results.precision) }}</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" style="width: {{ (training_status.results.precision * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Recall</div>
+                        <div class="metric-value">{{ "%.4f"|format(training_status.results.recall) }}</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" style="width: {{ (training_status.results.recall * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">F1-Score</div>
+                        <div class="metric-value">{{ "%.4f"|format(training_status.results.f1_score) }}</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" style="width: {{ (training_status.results.f1_score * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-data">
+                    <div class="no-data-icon">📈</div>
+                    <p class="no-data-text">No training results available</p>
+                    <p class="no-data-subtitle">Start a training session to see performance metrics</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="training-card">
+            <div class="card-header">
+                <h3 class="card-title">⚡ Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="quick-action" onclick="loadSampleData()" {% if training_status.is_training %}disabled{% endif %}>
+                        <div class="action-icon">📂</div>
+                        <span class="action-text">Load Sample Data</span>
+                    </button>
+                    <button class="quick-action" onclick="validateModel()" {% if training_status.is_training %}disabled{% endif %}>
+                        <div class="action-icon">✅</div>
+                        <span class="action-text">Validate Model</span>
+                    </button>
+                    <button class="quick-action" onclick="exportModel()" {% if training_status.is_training %}disabled{% endif %}>
+                        <div class="action-icon">📤</div>
+                        <span class="action-text">Export Model</span>
+                    </button>
+                    <button class="quick-action" onclick="backupModel()" {% if training_status.is_training %}disabled{% endif %}>
+                        <div class="action-icon">💾</div>
+                        <span class="action-text">Backup Model</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Resources -->
+        <div class="training-card">
+            <div class="card-header">
+                <h3 class="card-title">💻 System Resources</h3>
+            </div>
+            <div class="card-body">
+                <div class="resource-grid">
+                    <div class="resource-item">
+                        <div class="resource-label">CPU Usage</div>
+                        <div class="resource-bar">
+                            <div class="resource-fill cpu" style="width: 45%"></div>
+                        </div>
+                        <div class="resource-value">45%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Memory Usage</div>
+                        <div class="resource-bar">
+                            <div class="resource-fill memory" style="width: 68%"></div>
+                        </div>
+                        <div class="resource-value">68%</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">Disk Space</div>
+                        <div class="resource-bar">
+                            <div class="resource-fill disk" style="width: 32%"></div>
+                        </div>
+                        <div class="resource-value">32%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let trainingInterval;
+
+// Start training process
+async function startTraining() {
+    const btn = document.getElementById('start-training-btn');
+    const originalText = btn.innerHTML;
+    
+    // Disable button and show loading
+    btn.innerHTML = '<span class="button-icon">⏳</span>Starting...';
+    btn.disabled = true;
+    
+    try {
+        // Get configuration from form
+        const formData = new FormData(document.getElementById('training-config-form'));
+        const config = {};
+        
+        // Convert form data to config object
+        for (let [key, value] of formData.entries()) {
+            if (config[key]) {
+                if (Array.isArray(config[key])) {
+                    config[key].push(value);
+                } else {
+                    config[key] = [config[key], value];
+                }
+            } else {
+                config[key] = value;
+            }
+        }
+        
+        // Start training via API
+        const response = await fetch('/api/train/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(config)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            addLogEntry('info', 'Training started successfully');
+            startTrainingMonitor();
+        } else {
+            addLogEntry('error', `Training failed: ${result.message}`);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+        
+    } catch (error) {
+        addLogEntry('error', `Error starting training: ${error.message}`);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Monitor training progress
+function startTrainingMonitor() {
+    trainingInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/api/train/status');
+            const status = await response.json();
+            
+            updateTrainingStatus(status);
+            
+            if (!status.is_training) {
+                clearInterval(trainingInterval);
+                const btn = document.getElementById('start-training-btn');
+                btn.innerHTML = '<span class="button-icon">🚀</span>Start Training';
+                btn.disabled = false;
+            }
+            
+        } catch (error) {
+            addLogEntry('error', `Error fetching training status: ${error.message}`);
+        }
+    }, 2000);
+}
+
+// Update training status display
+function updateTrainingStatus(status) {
+    // Update progress bar
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
+    if (progressFill && progressText) {
+        progressFill.style.width = status.progress + '%';
+        progressText.textContent = status.progress + '%';
+    }
+    
+    // Update current step
+    const currentStep = document.querySelector('.current-step');
+    if (currentStep) {
+        currentStep.textContent = status.current_step;
+    }
+    
+    // Update status indicator
+    const statusText = document.querySelector('.status-text');
+    const statusIndicator = document.querySelector('.status-indicator');
+    if (statusText && statusIndicator) {
+        statusText.textContent = status.status;
+        statusIndicator.className = `status-indicator ${status.is_training ? 'training' : 'ready'}`;
+    }
+}
+
+// Add log entry
+function addLogEntry(level, message) {
+    const logsContainer = document.getElementById('training-logs');
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry';
+    
+    const now = new Date().toLocaleString();
+    logEntry.innerHTML = `
+        <span class="log-time">${now}</span>
+        <span class="log-level ${level}">${level.toUpperCase()}</span>
+        <span class="log-message">${message}</span>
+    `;
+    
+    logsContainer.appendChild(logEntry);
+    logsContainer.scrollTop = logsContainer.scrollHeight;
+}
+
+// Range slider updates
+document.querySelectorAll('input[type="range"]').forEach(slider => {
+    slider.addEventListener('input', function() {
+        const valueSpan = this.nextElementSibling;
+        valueSpan.textContent = this.value;
+    });
+});
+
+// Quick action functions
+function loadSampleData() {
+    addLogEntry('info', 'Loading sample data...');
+    // Implementation would load sample data
+}
+
+function validateModel() {
+    addLogEntry('info', 'Validating current model...');
+    // Implementation would validate model
+}
+
+function exportModel() {
+    addLogEntry('info', 'Exporting model...');
+    // Implementation would export model
+}
+
+function backupModel() {
+    addLogEntry('info', 'Creating model backup...');
+    // Implementation would backup model
+}
+
+function resetConfig() {
+    document.getElementById('training-config-form').reset();
+    addLogEntry('info', 'Configuration reset to defaults');
+}
+
+function clearLogs() {
+    document.getElementById('training-logs').innerHTML = `
+        <div class="log-entry">
+            <span class="log-time">${new Date().toLocaleString()}</span>
+            <span class="log-level info">INFO</span>
+            <span class="log-message">Training logs cleared</span>
+        </div>
+    `;
+}
+
+function downloadLogs() {
+    const logs = document.getElementById('training-logs').innerText;
+    const blob = new Blob([logs], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'training_logs_' + new Date().toISOString().slice(0, 10) + '.txt';
+    a.click();
+    window.URL.revokeObjectURL(url);
+    addLogEntry('info', 'Training logs downloaded');
+}
+
+function viewTrainingHistory() {
+    // Implementation would show training history modal
+    addLogEntry('info', 'Viewing training history...');
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if training is already in progress
+    {% if training_status.is_training %}
+    startTrainingMonitor();
+    {% endif %}
+    
+    // Add entrance animations
+    const cards = document.querySelectorAll('.training-card, .status-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    addLogEntry('info', 'Training dashboard loaded successfully');
+});
+</script>
+
+<style>
+/* Training Dashboard Styles */
+.training-header {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.training-header .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.training-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.training-description {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.training-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Status Container */
+.status-container {
+    margin-bottom: 2rem;
+}
+
+.status-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.status-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-indicator.ready {
+    background: rgba(56, 161, 105, 0.2);
+    color: var(--success-color);
+}
+
+.status-indicator.training {
+    background: rgba(49, 130, 206, 0.2);
+    color: var(--accent-color);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Progress Section */
+.progress-section {
+    margin-top: 1rem;
+}
+
+.progress-bar {
+    position: relative;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color) 0%, var(--success-color) 100%);
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+}
+
+.current-step, .eta {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0.25rem 0;
+}
+
+/* Training Content */
+.training-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.training-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Training Configuration */
+.config-form .config-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.model-option {
+    cursor: pointer;
+}
+
+.model-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.model-option input[type="checkbox"] {
+    display: none;
+}
+
+.model-option input[type="checkbox"]:checked + .model-card {
+    border-color: var(--accent-color);
+    background: rgba(49, 130, 206, 0.1);
+}
+
+.model-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.model-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.params-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.param-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.param-group label {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.param-group input[type="range"] {
+    flex: 2;
+}
+
+.param-value {
+    min-width: 3rem;
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Advanced Options */
+.advanced-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.option-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Training Logs */
+.logs-container {
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+}
+
+.log-entry {
+    display: flex;
+    gap: 1rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.log-time {
+    color: var(--text-muted);
+    min-width: 140px;
+}
+
+.log-level {
+    min-width: 60px;
+    font-weight: 600;
+}
+
+.log-level.info { color: var(--accent-color); }
+.log-level.warn { color: var(--warning-color); }
+.log-level.error { color: var(--danger-color); }
+
+.log-message {
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+/* Performance Metrics */
+.performance-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.metric-card {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius);
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.metric-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.metric-fill {
+    height: 100%;
+    background: var(--accent-color);
+    transition: width 0.5s ease;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.quick-action:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.quick-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-icon {
+    font-size: 1.25rem;
+}
+
+.action-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* System Resources */
+.resource-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.resource-label {
+    min-width: 100px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.resource-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.resource-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.resource-fill.cpu { background: var(--accent-color); }
+.resource-fill.memory { background: var(--warning-color); }
+.resource-fill.disk { background: var(--success-color); }
+
+.resource-value {
+    min-width: 40px;
+    text-align: right;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* No Data State */
+.no-data {
+    text-align: center;
+    padding: 2rem;
+}
+
+.no-data-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.no-data-text {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.no-data-subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .training-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .training-header .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .model-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .training-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

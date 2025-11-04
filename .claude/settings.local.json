@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(jupyter nbconvert:*)",
+      "Bash(curl:*)",
+      "Bash(dir)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(timeout /t 3)"
+    ],
+    "deny": []
+  }
+}

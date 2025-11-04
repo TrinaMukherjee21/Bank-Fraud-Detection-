@@ -1,0 +1,77 @@
+{
+  "training_date": "2025-09-07T14:34:00.593535",
+  "model_type": "XGBoost Enhanced",
+  "feature_count": 15,
+  "training_samples": 883326,
+  "test_samples": 118433,
+  "best_threshold": 0.7499999999999999,
+  "performance": {
+    "accuracy": 0.9860849594285377,
+    "precision": 0.45813953488372094,
+    "recall": 0.8254189944134078,
+    "f1_score": 0.5892323030907278,
+    "roc_auc": 0.9896917780485952
+  },
+  "feature_importance": [
+    {
+      "feature": "is_small_transaction",
+      "importance": 0.44933021068573
+    },
+    {
+      "feature": "amount_squared",
+      "importance": 0.3517746329307556
+    },
+    {
+      "feature": "amount",
+      "importance": 0.06733889877796173
+    },
+    {
+      "feature": "category",
+      "importance": 0.05324040725827217
+    },
+    {
+      "feature": "sqrt_amount",
+      "importance": 0.036159202456474304
+    },
+    {
+      "feature": "gender",
+      "importance": 0.014057663269340992
+    },
+    {
+      "feature": "log_amount",
+      "importance": 0.012202688492834568
+    },
+    {
+      "feature": "step_log",
+      "importance": 0.004604649264365435
+    },
+    {
+      "feature": "step",
+      "importance": 0.004310480784624815
+    },
+    {
+      "feature": "age",
+      "importance": 0.0038193154614418745
+    },
+    {
+      "feature": "customer",
+      "importance": 0.003161854110658169
+    },
+    {
+      "feature": "is_large_transaction",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_very_large_transaction",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_early_step",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_late_step",
+      "importance": 0.0
+    }
+  ]
+}

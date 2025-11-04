@@ -1,0 +1,166 @@
+2025-08-18 20:33:25,389 - train_enhanced_model - INFO - FraudDetectionTrainer initialized
+2025-08-18 20:36:07,297 - __main__ - INFO - FraudDetectionTrainer initialized
+2025-08-18 20:36:07,298 - __main__ - INFO - Loading data from Data/bs140513_032310.csv
+2025-08-18 20:36:07,817 - __main__ - INFO - Data loaded successfully. Shape: (594643, 10)
+2025-08-18 20:36:07,818 - __main__ - INFO - Columns: ['step', 'customer', 'age', 'gender', 'zipcodeOri', 'merchant', 'zipMerchant', 'category', 'amount', 'fraud']
+2025-08-18 20:36:07,941 - __main__ - INFO - Missing values: 0
+2025-08-18 20:36:07,943 - __main__ - INFO - Fraud rate: 0.0121 (1.21%)
+2025-08-18 20:36:07,944 - __main__ - INFO - Fraud cases: 7200
+2025-08-18 20:36:07,946 - __main__ - INFO - Legitimate cases: 587443
+2025-08-18 20:36:07,946 - __main__ - INFO - Performing data quality checks...
+2025-08-18 20:36:08,213 - __main__ - INFO - Duplicate rows: 0
+2025-08-18 20:36:08,214 - __main__ - INFO - Data types:
+2025-08-18 20:36:08,214 - __main__ - INFO -   step: int64
+2025-08-18 20:36:08,215 - __main__ - INFO -   customer: object
+2025-08-18 20:36:08,215 - __main__ - INFO -   age: object
+2025-08-18 20:36:08,215 - __main__ - INFO -   gender: object
+2025-08-18 20:36:08,215 - __main__ - INFO -   zipcodeOri: object
+2025-08-18 20:36:08,215 - __main__ - INFO -   merchant: object
+2025-08-18 20:36:08,216 - __main__ - INFO -   zipMerchant: object
+2025-08-18 20:36:08,216 - __main__ - INFO -   category: object
+2025-08-18 20:36:08,216 - __main__ - INFO -   amount: float64
+2025-08-18 20:36:08,216 - __main__ - INFO -   fraud: int64
+2025-08-18 20:36:08,237 - __main__ - INFO - Outliers in step: 0 (0.00%)
+2025-08-18 20:36:08,272 - __main__ - INFO - Outliers in amount: 25798 (4.34%)
+2025-08-18 20:36:08,273 - __main__ - INFO - Starting advanced preprocessing...
+2025-08-18 20:36:08,761 - __main__ - INFO - Engineering advanced features...
+2025-08-18 20:36:09,267 - __main__ - INFO - Feature engineering complete. New shape: (592161, 24)
+2025-08-18 20:36:09,433 - __main__ - INFO - Encoded customer: 4112 unique values
+2025-08-18 20:36:09,528 - __main__ - INFO - Encoded age: 8 unique values
+2025-08-18 20:36:09,638 - __main__ - INFO - Encoded gender: 4 unique values
+2025-08-18 20:36:09,765 - __main__ - INFO - Encoded category: 15 unique values
+2025-08-18 20:36:09,766 - __main__ - INFO - Handling outliers...
+2025-08-18 20:36:16,284 - __main__ - INFO - Detected 59216 outliers (10.00%)
+2025-08-18 20:36:16,289 - __main__ - INFO - Preprocessing complete. Final shape: (592161, 25)
+2025-08-18 20:36:16,290 - __main__ - INFO - Preparing features for training...
+2025-08-18 20:36:16,351 - __main__ - INFO - Performing feature selection...
+2025-08-18 20:36:16,864 - __main__ - INFO - Selected 20 features: ['step', 'gender', 'category', 'amount', 'log_amount', 'sqrt_amount', 'amount_squared', 'is_small_transaction', 'is_medium_transaction', 'is_large_transaction', 'is_very_large_transaction', 'step_log', 'customer_transaction_count', 'customer_avg_amount', 'customer_amount_std', 'customer_total_amount', 'category_avg_amount', 'category_amount_std', 'amount_per_step', 'is_outlier']
+2025-08-18 20:36:17,310 - __main__ - INFO - Features prepared. Shape: (592161, 20)
+2025-08-18 20:36:17,311 - __main__ - INFO - Feature columns: ['step', 'gender', 'category', 'amount', 'log_amount', 'sqrt_amount', 'amount_squared', 'is_small_transaction', 'is_medium_transaction', 'is_large_transaction', 'is_very_large_transaction', 'step_log', 'customer_transaction_count', 'customer_avg_amount', 'customer_amount_std', 'customer_total_amount', 'category_avg_amount', 'category_amount_std', 'amount_per_step', 'is_outlier']
+2025-08-18 20:36:17,319 - __main__ - INFO - Starting model training...
+2025-08-18 20:36:17,831 - __main__ - INFO - Balancing dataset...
+2025-08-18 20:36:17,832 - __main__ - INFO - Original fraud ratio: 0.0121
+2025-08-18 20:59:31,747 - __main__ - INFO - Balanced fraud ratio: 0.5035
+2025-08-18 20:59:31,758 - __main__ - INFO - Balanced dataset shape: (928741, 20)
+2025-08-18 20:59:31,841 - __main__ - INFO - Training XGBoost...
+2025-08-18 20:59:31,842 - __main__ - INFO - Tuning hyperparameters...
+2025-08-18 21:16:58,479 - __main__ - INFO - FraudDetectionTrainer initialized
+2025-08-18 21:16:58,480 - __main__ - INFO - Loading data from Data/bs140513_032310.csv
+2025-08-18 21:16:59,385 - __main__ - INFO - Data loaded successfully. Shape: (594643, 10)
+2025-08-18 21:16:59,386 - __main__ - INFO - Columns: ['step', 'customer', 'age', 'gender', 'zipcodeOri', 'merchant', 'zipMerchant', 'category', 'amount', 'fraud']
+2025-08-18 21:16:59,579 - __main__ - INFO - Missing values: 0
+2025-08-18 21:16:59,587 - __main__ - INFO - Fraud rate: 0.0121 (1.21%)
+2025-08-18 21:16:59,588 - __main__ - INFO - Fraud cases: 7200
+2025-08-18 21:16:59,592 - __main__ - INFO - Legitimate cases: 587443
+2025-08-18 21:16:59,593 - __main__ - INFO - Performing data quality checks...
+2025-08-18 21:16:59,993 - __main__ - INFO - Duplicate rows: 0
+2025-08-18 21:16:59,994 - __main__ - INFO - Data types:
+2025-08-18 21:16:59,994 - __main__ - INFO -   step: int64
+2025-08-18 21:16:59,995 - __main__ - INFO -   customer: object
+2025-08-18 21:16:59,995 - __main__ - INFO -   age: object
+2025-08-18 21:16:59,996 - __main__ - INFO -   gender: object
+2025-08-18 21:16:59,996 - __main__ - INFO -   zipcodeOri: object
+2025-08-18 21:16:59,997 - __main__ - INFO -   merchant: object
+2025-08-18 21:16:59,998 - __main__ - INFO -   zipMerchant: object
+2025-08-18 21:16:59,998 - __main__ - INFO -   category: object
+2025-08-18 21:16:59,999 - __main__ - INFO -   amount: float64
+2025-08-18 21:17:00,000 - __main__ - INFO -   fraud: int64
+2025-08-18 21:17:00,061 - __main__ - INFO - Outliers in step: 0 (0.00%)
+2025-08-18 21:17:00,105 - __main__ - INFO - Outliers in amount: 25798 (4.34%)
+2025-08-18 21:17:00,107 - __main__ - INFO - Starting advanced preprocessing...
+2025-08-18 21:17:00,778 - __main__ - INFO - Engineering advanced features...
+2025-08-18 21:17:01,423 - __main__ - INFO - Feature engineering complete. New shape: (592161, 24)
+2025-08-18 21:17:01,617 - __main__ - INFO - Encoded customer: 4112 unique values
+2025-08-18 21:17:01,814 - __main__ - INFO - Encoded age: 8 unique values
+2025-08-18 21:17:02,007 - __main__ - INFO - Encoded gender: 4 unique values
+2025-08-18 21:17:02,231 - __main__ - INFO - Encoded category: 15 unique values
+2025-08-18 21:17:02,233 - __main__ - INFO - Handling outliers...
+2025-08-18 21:17:09,340 - __main__ - INFO - Detected 59216 outliers (10.00%)
+2025-08-18 21:17:09,348 - __main__ - INFO - Preprocessing complete. Final shape: (592161, 25)
+2025-08-18 21:17:09,349 - __main__ - INFO - Preparing features for training...
+2025-08-18 21:17:09,406 - __main__ - INFO - Performing feature selection...
+2025-08-18 21:17:09,900 - __main__ - INFO - Selected 20 features: ['step', 'gender', 'category', 'amount', 'log_amount', 'sqrt_amount', 'amount_squared', 'is_small_transaction', 'is_medium_transaction', 'is_large_transaction', 'is_very_large_transaction', 'step_log', 'customer_transaction_count', 'customer_avg_amount', 'customer_amount_std', 'customer_total_amount', 'category_avg_amount', 'category_amount_std', 'amount_per_step', 'is_outlier']
+2025-08-18 21:17:10,394 - __main__ - INFO - Features prepared. Shape: (592161, 20)
+2025-08-18 21:17:10,395 - __main__ - INFO - Feature columns: ['step', 'gender', 'category', 'amount', 'log_amount', 'sqrt_amount', 'amount_squared', 'is_small_transaction', 'is_medium_transaction', 'is_large_transaction', 'is_very_large_transaction', 'step_log', 'customer_transaction_count', 'customer_avg_amount', 'customer_amount_std', 'customer_total_amount', 'category_avg_amount', 'category_amount_std', 'amount_per_step', 'is_outlier']
+2025-08-18 21:17:10,406 - __main__ - INFO - Starting model training...
+2025-08-18 21:17:10,970 - __main__ - INFO - Balancing dataset...
+2025-08-18 21:17:10,972 - __main__ - INFO - Original fraud ratio: 0.0121
+2025-08-18 21:46:17,756 - __main__ - INFO - Balanced fraud ratio: 0.5035
+2025-08-18 21:46:17,782 - __main__ - INFO - Balanced dataset shape: (928741, 20)
+2025-08-18 21:46:17,870 - __main__ - INFO - Training XGBoost...
+2025-08-18 21:46:17,871 - __main__ - INFO - Tuning hyperparameters...
+2025-08-18 21:55:05,000 - __main__ - INFO - Best parameters for XGBClassifier: {'subsample': 1.0, 'n_estimators': 300, 'max_depth': 9, 'learning_rate': 0.2, 'colsample_bytree': 0.9}
+2025-08-18 21:55:47,268 - __main__ - INFO - XGBoost - F1 Score: 0.7189
+2025-08-18 21:55:47,268 - __main__ - INFO - Training LightGBM...
+2025-08-18 21:55:47,269 - __main__ - INFO - Tuning hyperparameters...
+2025-08-18 22:03:49,501 - __main__ - INFO - Best parameters for LGBMClassifier: {'subsample': 1.0, 'n_estimators': 300, 'max_depth': 9, 'learning_rate': 0.2, 'colsample_bytree': 0.9}
+2025-08-18 22:04:18,378 - __main__ - INFO - LightGBM - F1 Score: 0.7089
+2025-08-18 22:04:18,378 - __main__ - INFO - Training RandomForest...
+2025-08-18 22:04:18,379 - __main__ - INFO - Tuning hyperparameters...
+2025-08-18 23:53:55,974 - __main__ - INFO - Best parameters for RandomForestClassifier: {'n_estimators': 100, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_depth': None}
+2025-08-18 23:56:09,386 - __main__ - INFO - RandomForest - F1 Score: 0.6892
+2025-08-18 23:56:09,387 - __main__ - INFO - Training CatBoost...
+2025-08-18 23:56:09,388 - __main__ - INFO - Tuning hyperparameters...
+2025-08-18 23:58:14,826 - __main__ - INFO - CatBoost - F1 Score: 0.6140
+2025-08-18 23:58:14,827 - __main__ - INFO - Best model: XGBoost
+2025-08-18 23:58:14,828 - __main__ - INFO - Creating ensemble model...
+2025-08-19 00:33:33,182 - __main__ - INFO - FraudDetectionTrainer initialized
+2025-08-19 00:33:33,183 - __main__ - INFO - Loading data from Data/bs140513_032310.csv
+2025-08-19 00:33:33,712 - __main__ - INFO - Data loaded successfully. Shape: (594643, 10)
+2025-08-19 00:33:33,712 - __main__ - INFO - Columns: ['step', 'customer', 'age', 'gender', 'zipcodeOri', 'merchant', 'zipMerchant', 'category', 'amount', 'fraud']
+2025-08-19 00:33:33,841 - __main__ - INFO - Missing values: 0
+2025-08-19 00:33:33,850 - __main__ - INFO - Fraud rate: 0.0121 (1.21%)
+2025-08-19 00:33:33,851 - __main__ - INFO - Fraud cases: 7200
+2025-08-19 00:33:33,852 - __main__ - INFO - Legitimate cases: 587443
+2025-08-19 00:33:33,852 - __main__ - INFO - Performing data quality checks...
+2025-08-19 00:33:34,107 - __main__ - INFO - Duplicate rows: 0
+2025-08-19 00:33:34,108 - __main__ - INFO - Data types:
+2025-08-19 00:33:34,108 - __main__ - INFO -   step: int64
+2025-08-19 00:33:34,109 - __main__ - INFO -   customer: object
+2025-08-19 00:33:34,109 - __main__ - INFO -   age: object
+2025-08-19 00:33:34,109 - __main__ - INFO -   gender: object
+2025-08-19 00:33:34,109 - __main__ - INFO -   zipcodeOri: object
+2025-08-19 00:33:34,109 - __main__ - INFO -   merchant: object
+2025-08-19 00:33:34,109 - __main__ - INFO -   zipMerchant: object
+2025-08-19 00:33:34,110 - __main__ - INFO -   category: object
+2025-08-19 00:33:34,110 - __main__ - INFO -   amount: float64
+2025-08-19 00:33:34,110 - __main__ - INFO -   fraud: int64
+2025-08-19 00:33:34,133 - __main__ - INFO - Outliers in step: 0 (0.00%)
+2025-08-19 00:33:34,161 - __main__ - INFO - Outliers in amount: 25798 (4.34%)
+2025-08-19 00:33:34,161 - __main__ - INFO - Starting advanced preprocessing...
+2025-08-19 00:33:34,700 - __main__ - INFO - Engineering advanced features...
+2025-08-19 00:33:35,283 - __main__ - INFO - Feature engineering complete. New shape: (592161, 24)
+2025-08-19 00:33:35,459 - __main__ - INFO - Encoded customer: 4112 unique values
+2025-08-19 00:33:35,586 - __main__ - INFO - Encoded age: 8 unique values
+2025-08-19 00:33:35,714 - __main__ - INFO - Encoded gender: 4 unique values
+2025-08-19 00:33:35,850 - __main__ - INFO - Encoded category: 15 unique values
+2025-08-19 00:33:35,851 - __main__ - INFO - Handling outliers...
+2025-08-19 00:33:42,829 - __main__ - INFO - Detected 59216 outliers (10.00%)
+2025-08-19 00:33:42,833 - __main__ - INFO - Preprocessing complete. Final shape: (592161, 25)
+2025-08-19 00:33:42,833 - __main__ - INFO - Preparing features for training...
+2025-08-19 00:33:42,877 - __main__ - INFO - Performing feature selection...
+2025-08-19 00:33:43,433 - __main__ - INFO - Selected 20 features: ['step', 'gender', 'category', 'amount', 'log_amount', 'sqrt_amount', 'amount_squared', 'is_small_transaction', 'is_medium_transaction', 'is_large_transaction', 'is_very_large_transaction', 'step_log', 'customer_transaction_count', 'customer_avg_amount', 'customer_amount_std', 'customer_total_amount', 'category_avg_amount', 'category_amount_std', 'amount_per_step', 'is_outlier']
+2025-08-19 00:33:43,929 - __main__ - INFO - Features prepared. Shape: (592161, 20)
+2025-08-19 00:33:43,929 - __main__ - INFO - Feature columns: ['step', 'gender', 'category', 'amount', 'log_amount', 'sqrt_amount', 'amount_squared', 'is_small_transaction', 'is_medium_transaction', 'is_large_transaction', 'is_very_large_transaction', 'step_log', 'customer_transaction_count', 'customer_avg_amount', 'customer_amount_std', 'customer_total_amount', 'category_avg_amount', 'category_amount_std', 'amount_per_step', 'is_outlier']
+2025-08-19 00:33:43,940 - __main__ - INFO - Starting model training...
+2025-08-19 00:33:44,493 - __main__ - INFO - Balancing dataset...
+2025-08-19 00:33:44,494 - __main__ - INFO - Original fraud ratio: 0.0121
+2025-08-19 00:58:01,201 - __main__ - INFO - Balanced fraud ratio: 0.5035
+2025-08-19 00:58:01,205 - __main__ - INFO - Balanced dataset shape: (928741, 20)
+2025-08-19 00:58:01,230 - __main__ - INFO - Training XGBoost...
+2025-08-19 00:58:01,231 - __main__ - INFO - Tuning hyperparameters...
+2025-08-19 01:06:01,556 - __main__ - INFO - Best parameters for XGBClassifier: {'subsample': 1.0, 'n_estimators': 300, 'max_depth': 9, 'learning_rate': 0.2, 'colsample_bytree': 0.9}
+2025-08-19 01:06:38,132 - __main__ - INFO - XGBoost - F1 Score: 0.7189
+2025-08-19 01:06:38,133 - __main__ - INFO - Training LightGBM...
+2025-08-19 01:06:38,134 - __main__ - INFO - Tuning hyperparameters...
+2025-08-19 01:14:10,918 - __main__ - INFO - Best parameters for LGBMClassifier: {'subsample': 1.0, 'n_estimators': 300, 'max_depth': 9, 'learning_rate': 0.2, 'colsample_bytree': 0.9}
+2025-08-19 01:14:33,902 - __main__ - INFO - LightGBM - F1 Score: 0.7089
+2025-08-19 01:14:33,902 - __main__ - INFO - Training RandomForest...
+2025-08-19 01:14:33,902 - __main__ - INFO - Tuning hyperparameters...
+2025-08-19 02:37:10,273 - __main__ - INFO - Best parameters for RandomForestClassifier: {'n_estimators': 100, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_depth': None}
+2025-08-19 02:38:47,152 - __main__ - INFO - RandomForest - F1 Score: 0.6892
+2025-08-19 02:38:47,153 - __main__ - INFO - Training CatBoost...
+2025-08-19 02:38:47,154 - __main__ - INFO - Tuning hyperparameters...
+2025-08-19 02:40:03,809 - __main__ - INFO - CatBoost - F1 Score: 0.6140
+2025-08-19 02:40:03,809 - __main__ - INFO - Best model: XGBoost
+2025-08-19 02:40:03,810 - __main__ - INFO - Creating ensemble model...

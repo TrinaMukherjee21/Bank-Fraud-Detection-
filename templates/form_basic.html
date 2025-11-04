@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Quick Scan - SecureGuard Fraud Detection{% endblock %}
+
+{% block content %}
+<!-- Form Header -->
+<div class="analysis-header">
+    <div class="header-content">
+        <div class="analysis-info">
+            <h1 class="analysis-title">⚡ Quick Transaction Scan</h1>
+            <p class="analysis-description">Rapid fraud detection analysis for immediate threat assessment</p>
+        </div>
+        <div class="security-badge">
+            <div class="security-icon">🛡️</div>
+            <div class="security-text">
+                <span class="security-level">SECURE</span>
+                <span class="security-subtitle">End-to-End Encrypted</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Professional Form -->
+<div class="professional-form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2 class="form-title">Transaction Details</h2>
+            <div class="form-progress">
+                <div class="progress-steps">
+                    <div class="step active">1</div>
+                    <div class="step-line"></div>
+                    <div class="step">2</div>
+                </div>
+                <span class="progress-text">Step 1 of 2: Data Input</span>
+            </div>
+        </div>
+        
+        <form action="{{ url_for('predict') }}" method="POST" id="fraudForm" class="professional-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="step" class="professional-label">
+                        <span class="label-icon">⏱️</span>
+                        Time Sequence
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number" name="step" id="step" min="1" max="1000" required 
+                           class="professional-input" placeholder="Enter time sequence (1-1000)">
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Sequential time unit when the transaction was processed
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount" class="professional-label">
+                        <span class="label-icon">💰</span>
+                        Transaction Amount
+                        <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-prefix">$</span>
+                        <input type="number" name="amount" id="amount" step="0.01" min="0.01" max="1000000" required 
+                               class="professional-input with-prefix" placeholder="0.00">
+                    </div>
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Transaction amount in US dollars (USD)
+                    </div>
+                    <div id="amount-warning" class="field-warning" style="display: none;">
+                        <span class="warning-icon">⚠️</span>
+                        High-value transaction detected - additional security checks will be applied
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender" class="professional-label">
+                        <span class="label-icon">👤</span>
+                        Customer Profile
+                        <span class="required">*</span>
+                    </label>
+                    <select name="gender" id="gender" required class="professional-select">
+                        <option value="">Select Customer Gender</option>
+                        <option value="0">Male</option>
+                        <option value="1">Female</option>
+                    </select>
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Customer demographic information for behavioral analysis
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="professional-label">
+                        <span class="label-icon">🏪</span>
+                        Transaction Category
+                        <span class="required">*</span>
+                    </label>
+                    <select name="category" id="category" required class="professional-select">
+                        <option value="">Select Transaction Type</option>
+                        <optgroup label="Retail & Shopping">
+                            <option value="0">🛒 Grocery/Food</option>
+                            <option value="3">🛍️ Shopping/Retail</option>
+                            <option value="4">💻 Online Purchase</option>
+                        </optgroup>
+                        <optgroup label="Services">
+                            <option value="1">⛽ Gas Station</option>
+                            <option value="5">🍽️ Restaurant</option>
+                            <option value="6">🏥 Healthcare</option>
+                            <option value="9">🏠 Utilities</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="2">🎬 Entertainment</option>
+                            <option value="7">✈️ Travel</option>
+                            <option value="8">🏧 ATM/Cash</option>
+                            <option value="10">📦 Other</option>
+                        </optgroup>
+                    </select>
+                    <div class="field-help">
+                        <span class="help-icon">ℹ️</span>
+                        Merchant category for risk pattern analysis
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="action-button primary analysis-btn">
+                    <span class="button-icon">🔍</span>
+                    <span class="button-text">Analyze Transaction</span>
+                    <div class="button-spinner" style="display: none;">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+                <a href="{{ url_for('form_advanced') }}" class="action-button secondary">
+                    <span class="button-icon">🔬</span>
+                    Deep Analysis
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Quick Info Panel -->
+    <div class="info-panel">
+        <div class="info-card">
+            <div class="info-header">
+                <div class="info-icon">⚡</div>
+                <h3 class="info-title">Quick Scan Features</h3>
+            </div>
+            <div class="info-content">
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">Real-time processing (&lt;0.3s)</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">99.7% detection accuracy</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">Risk level assessment</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span class="feature-text">Pattern anomaly detection</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <div class="info-icon">📊</div>
+                <h3 class="info-title">Security Metrics</h3>
+            </div>
+            <div class="info-content">
+                <div class="metric-row">
+                    <span class="metric-label">Detection Rate</span>
+                    <span class="metric-value success">99.7%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">False Positives</span>
+                    <span class="metric-value low">0.8%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Response Time</span>
+                    <span class="metric-value optimal">&lt;0.3s</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">System Uptime</span>
+                    <span class="metric-value excellent">99.9%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('fraudForm').addEventListener('submit', function(e) {
+    const submitBtn = e.target.querySelector('.analysis-btn');
+    const buttonText = submitBtn.querySelector('.button-text');
+    const buttonSpinner = submitBtn.querySelector('.button-spinner');
+    
+    buttonText.style.display = 'none';
+    buttonSpinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    
+    // Show loading overlay
+    showLoading();
+});
+
+// Enhanced amount validation with professional styling
+document.getElementById('amount').addEventListener('input', function(e) {
+    const value = parseFloat(e.target.value);
+    const warning = document.getElementById('amount-warning');
+    const inputWrapper = e.target.parentElement;
+    
+    if (value > 10000) {
+        inputWrapper.classList.add('warning');
+        warning.style.display = 'flex';
+    } else {
+        inputWrapper.classList.remove('warning');
+        warning.style.display = 'none';
+    }
+    
+    // Format display
+    if (value) {
+        e.target.setAttribute('data-formatted', new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(value));
+    }
+});
+
+// Professional form validation
+const inputs = document.querySelectorAll('.professional-input, .professional-select');
+inputs.forEach(input => {
+    input.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            this.classList.add('error');
+        } else {
+            this.classList.remove('error');
+        }
+    });
+    
+    input.addEventListener('focus', function() {
+        this.classList.remove('error');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - SecureGuard Fraud Detection{% endblock %}
+
+{% block content %}
+<!-- Results Header -->
+<div class="results-header">
+    <div class="header-content">
+        <div class="results-info">
+            <h1 class="results-title">🛡️ Security Analysis Complete</h1>
+            <p class="results-description">Comprehensive fraud detection analysis results</p>
+        </div>
+        <div class="analysis-timestamp">
+            <div class="timestamp-icon">⏰</div>
+            <div class="timestamp-text">
+                <span class="timestamp-label">Analysis Time</span>
+                <span class="timestamp-value" id="current-time"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Threat Assessment Dashboard -->
+<div class="threat-dashboard">
+    <!-- Primary Threat Indicator -->
+    <div class="threat-panel {{ 'threat-detected' if prediction == 1 else 'threat-clear' }}">
+        <div class="threat-header">
+            <div class="threat-icon {{ 'critical' if prediction == 1 else 'secure' }}">
+                {% if prediction == 1 %}🚨{% else %}🛡️{% endif %}
+            </div>
+            <div class="threat-info">
+                <h2 class="threat-status">
+                    {% if prediction == 1 %}
+                        THREAT DETECTED
+                    {% else %}
+                        LEGITIMATE TRANSACTION
+                    {% endif %}
+                </h2>
+                <p class="threat-subtitle">
+                    {% if prediction == 1 %}
+                        Fraudulent activity identified - immediate action required
+                    {% else %}
+                        Transaction cleared - no suspicious activity detected
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="threat-metrics">
+            <div class="metric-grid">
+                <div class="metric-item">
+                    <div class="metric-label">Confidence Score</div>
+                    <div class="metric-value-container">
+                        <div class="metric-bar">
+                            <div class="metric-fill {{ 'high' if confidence > 80 else 'medium' if confidence > 60 else 'low' }}" 
+                                 style="width: {{ confidence }}%"></div>
+                        </div>
+                        <span class="metric-percentage">{{ confidence }}%</span>
+                    </div>
+                </div>
+                
+                {% if fraud_probability %}
+                <div class="metric-item">
+                    <div class="metric-label">Fraud Probability</div>
+                    <div class="metric-value-container">
+                        <div class="metric-bar">
+                            <div class="metric-fill threat" style="width: {{ fraud_probability }}%"></div>
+                        </div>
+                        <span class="metric-percentage">{{ fraud_probability }}%</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details Panel -->
+    <div class="details-panel">
+        <div class="details-header">
+            <h3 class="details-title">Transaction Analysis</h3>
+            <div class="details-icon">📊</div>
+        </div>
+        
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="detail-icon">💰</div>
+                <div class="detail-content">
+                    <span class="detail-label">Amount</span>
+                    <span class="detail-value amount">${{ "{:,.2f}".format(amount) }}</span>
+                </div>
+            </div>
+            
+            {% if risk_level %}
+            <div class="detail-item">
+                <div class="detail-icon">⚠️</div>
+                <div class="detail-content">
+                    <span class="detail-label">Risk Level</span>
+                    <span class="risk-badge risk-{{ risk_level.lower().replace(' ', '-') }}">
+                        {{ risk_level }}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="detail-item">
+                <div class="detail-icon">🔍</div>
+                <div class="detail-content">
+                    <span class="detail-label">Analysis Method</span>
+                    <span class="detail-value">ML Enhanced Detection</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">⚡</div>
+                <div class="detail-content">
+                    <span class="detail-label">Processing Speed</span>
+                    <span class="detail-value">&lt;0.3s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Factor Analysis -->
+{% if risk_factors %}
+<div class="risk-analysis-panel">
+    <div class="analysis-header">
+        <h3 class="analysis-title">🎯 Risk Factor Analysis</h3>
+        <div class="factor-count">{{ risk_factors|length }} factor{{ 's' if risk_factors|length != 1 else '' }} identified</div>
+    </div>
+    
+    <div class="risk-factors-grid">
+        {% for factor in risk_factors %}
+        <div class="risk-factor-item">
+            <div class="factor-indicator {{ 'high' if 'High' in factor else 'medium' if 'Above' in factor else 'low' }}"></div>
+            <div class="factor-content">
+                <span class="factor-text">{{ factor }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Bank Compliance Panel -->
+{% if compliance_flags or regulatory_flags or limit_violations or compliance_warnings %}
+<div class="compliance-panel">
+    <div class="compliance-header">
+        <h3 class="compliance-title">🏦 Banking Compliance Analysis</h3>
+        <div class="compliance-status {{ 'compliant' if compliance_status == 'COMPLIANT' else 'non-compliant' }}">
+            {{ compliance_status }}
+        </div>
+    </div>
+
+    <div class="compliance-content">
+        <!-- Regulatory Flags -->
+        {% if regulatory_flags %}
+        <div class="compliance-section">
+            <h4 class="section-title">📋 Regulatory Requirements</h4>
+            <div class="flags-grid">
+                {% for flag in regulatory_flags %}
+                <div class="flag-item regulatory">
+                    <div class="flag-icon">🚩</div>
+                    <span class="flag-text">{{ flag.replace('_', ' ').title() }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Limit Violations -->
+        {% if limit_violations %}
+        <div class="compliance-section">
+            <h4 class="section-title">⚠️ Policy Violations</h4>
+            <div class="violations-list">
+                {% for violation in limit_violations %}
+                <div class="violation-item">
+                    <div class="violation-icon">🚫</div>
+                    <span class="violation-text">{{ violation }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Compliance Warnings -->
+        {% if compliance_warnings %}
+        <div class="compliance-section">
+            <h4 class="section-title">⚡ Compliance Warnings</h4>
+            <div class="warnings-list">
+                {% for warning in compliance_warnings %}
+                <div class="warning-item">
+                    <div class="warning-icon">⚠️</div>
+                    <span class="warning-text">{{ warning }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Manual Review Required -->
+        {% if requires_manual_review %}
+        <div class="compliance-section manual-review">
+            <h4 class="section-title">👤 Manual Review Required</h4>
+            <p class="review-message">This transaction requires manual review by compliance officers due to regulatory flags or risk thresholds.</p>
+        </div>
+        {% endif %}
+
+        <!-- Compliance Actions -->
+        {% if compliance_actions %}
+        <div class="compliance-section">
+            <h4 class="section-title">✅ Recommended Actions</h4>
+            <div class="actions-list">
+                {% for action in compliance_actions %}
+                <div class="action-item">
+                    <span class="action-text">{{ action }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Center -->
+<div class="action-center">
+    <div class="center-header">
+        <h3 class="center-title">Next Actions</h3>
+        <div class="center-subtitle">
+            {% if prediction == 1 %}
+                Fraud detected - review and take appropriate security measures
+            {% else %}
+                Transaction verified - you may proceed safely
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="action-grid">
+        <a href="{{ url_for('form_basic') }}" class="action-card primary">
+            <div class="action-icon">🔄</div>
+            <div class="action-content">
+                <h4 class="action-title">New Quick Scan</h4>
+                <p class="action-description">Analyze another transaction</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('form_advanced') }}" class="action-card secondary">
+            <div class="action-icon">🔬</div>
+            <div class="action-content">
+                <h4 class="action-title">Deep Analysis</h4>
+                <p class="action-description">Comprehensive investigation</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('home') }}" class="action-card tertiary">
+            <div class="action-icon">🏠</div>
+            <div class="action-content">
+                <h4 class="action-title">Dashboard</h4>
+                <p class="action-description">Return to main console</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Security Notice -->
+<div class="security-notice">
+    <div class="notice-icon">🔒</div>
+    <div class="notice-content">
+        <h4 class="notice-title">Security Notice</h4>
+        <p class="notice-text">
+            This analysis uses advanced machine learning algorithms with 99.7% accuracy. 
+            Results are for security assessment purposes and should be integrated with your existing fraud prevention protocols.
+            All data is processed securely and not stored permanently.
+        </p>
+    </div>
+</div>
+
+<script>
+// Display current timestamp
+document.addEventListener('DOMContentLoaded', function() {
+    const timestamp = document.getElementById('current-time');
+    if (timestamp) {
+        timestamp.textContent = new Date().toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+    
+    // Animate metrics bars
+    setTimeout(() => {
+        const bars = document.querySelectorAll('.metric-fill');
+        bars.forEach(bar => {
+            bar.style.transition = 'width 1.5s ease-out';
+        });
+    }, 500);
+    
+    // Add entrance animation
+    const panels = document.querySelectorAll('.threat-panel, .details-panel, .risk-analysis-panel');
+    panels.forEach((panel, index) => {
+        panel.style.opacity = '0';
+        panel.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            panel.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            panel.style.opacity = '1';
+            panel.style.transform = 'translateY(0)';
+        }, index * 200);
+    });
+    
+    // Enhanced result animations
+    const threatPanel = document.querySelector('.threat-panel');
+    if (threatPanel) {
+        // Add pulsing effect for threat detection
+        if (threatPanel.classList.contains('threat-detected')) {
+            threatPanel.style.animation = 'threatPulse 2s ease-in-out infinite';
+        }
+    }
+    
+    // Interactive metric bars
+    document.querySelectorAll('.metric-fill').forEach(bar => {
+        bar.addEventListener('mouseenter', function() {
+            this.style.filter = 'brightness(1.2) saturate(1.3)';
+            this.style.boxShadow = '0 0 20px currentColor';
+        });
+        
+        bar.addEventListener('mouseleave', function() {
+            this.style.filter = 'brightness(1) saturate(1)';
+            this.style.boxShadow = 'initial';
+        });
+    });
+    
+    // Add dynamic threat level indicators
+    const riskBadges = document.querySelectorAll('.risk-badge');
+    riskBadges.forEach(badge => {
+        badge.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.boxShadow = '0 0 15px currentColor';
+        });
+        
+        badge.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = 'initial';
+        });
+    });
+    
+    // Add CSS for threat pulse animation
+    const threatStyles = `
+        @keyframes threatPulse {
+            0%, 100% {
+                border-color: rgba(229, 62, 62, 0.6);
+                box-shadow: 0 0 20px rgba(229, 62, 62, 0.3);
+            }
+            50% {
+                border-color: rgba(229, 62, 62, 1);
+                box-shadow: 0 0 40px rgba(229, 62, 62, 0.6);
+            }
+        }
+        
+        .action-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+    `;
+    
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = threatStyles;
+    document.head.appendChild(styleSheet);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SecureGuard Fraud Detection{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzMxODJjZSIvPgo8cGF0aCBkPSJNMTYgOEMxMi42ODYzIDggMTAgMTAuNjg2MyAxMCAxNEMxMCAxNy4zMTM3IDEyLjY4NjMgMjAgMTYgMjBDMTkuMzEzNyAyMCAyMiAxNy4zMTM3IDIyIDE0QzIyIDEwLjY4NjMgMTkuMzEzNyA4IDE2IDhaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTYgMTJDMTUuNDQ3NyAxMiAxNSAxMi40NDc3IDE1IDEzQzE1IDEzLjU1MjMgMTUuNDQ3NyAxNCAxNiAxNEMxNi41NTIzIDE0IDE3IDEzLjU1MjMgMTcgMTNDMTcgMTIuNDQ3NyAxNi41NTIzIDEyIDE2IDEyWiIgZmlsbD0iIzMxODJjZSIvPgo8L3N2Zz4K">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="description" content="Professional fraud detection system for financial institutions">
+    <meta name="theme-color" content="#00d4ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SecureGuard">
+    <meta name="mobile-web-app-capable" content="yes">
+    <style>
+        .logout-link {
+            margin-left: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            text-decoration: none;
+            font-size: 1.25rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .logout-link:hover {
+            opacity: 1;
+        }
+        .login-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .login-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Professional Header -->
+        <header class="main-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <div class="logo-icon">🛡️</div>
+                        <span>SecureGuard</span>
+                        <span class="logo-subtitle">Fraud Detection</span>
+                    </div>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                    <!-- Desktop Navigation -->
+                    <nav class="main-nav" id="main-nav">
+                        <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">
+                            <span class="nav-icon">🏠</span>
+                            Dashboard
+                        </a>
+                        <a href="{{ url_for('form_basic') }}" class="nav-link {% if request.endpoint == 'form_basic' %}active{% endif %}">
+                            <span class="nav-icon">⚡</span>
+                            Quick Scan
+                        </a>
+                        <a href="{{ url_for('form_advanced') }}" class="nav-link {% if request.endpoint == 'form_advanced' %}active{% endif %}">
+                            <span class="nav-icon">🔍</span>
+                            Deep Analysis
+                        </a>
+                        <a href="{{ url_for('analytics') }}" class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}">
+                            <span class="nav-icon">📊</span>
+                            Analytics
+                        </a>
+                        <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">
+                            <span class="nav-icon">ℹ️</span>
+                            About
+                        </a>
+                    </nav>
+
+                    <div class="system-status">
+                        <div class="status-indicator success">
+                            <div class="status-dot"></div>
+                            <span>System Online</span>
+                        </div>
+                        {% if current_user.is_authenticated %}
+                        <div class="user-profile">
+                            <div class="user-avatar">{{ current_user.username[0].upper() }}</div>
+                            <span class="user-name">{{ current_user.username }} ({{ current_user.role|title }})</span>
+                            <a href="{{ url_for('logout') }}" class="logout-link" title="Logout">🚪</a>
+                        </div>
+                        {% else %}
+                        <div class="user-profile">
+                            <a href="{{ url_for('login') }}" class="login-link">Login</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Navigation Overlay -->
+        <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="container">
+                <div class="content-wrapper">
+                    {% block content %}
+                    <!-- Dynamic content will go here -->
+                    {% endblock %}
+                </div>
+            </div>
+        </main>
+
+        <!-- Professional Footer -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <p>&copy; 2025 SecureGuard Fraud Detection. Enterprise Grade Security.</p>
+                </div>
+                <div class="footer-section">
+                    <span class="footer-badge">
+                        <span class="badge-icon">🔒</span>
+                        SOC 2 Compliant
+                    </span>
+                    <span class="footer-badge">
+                        <span class="badge-icon">⚡</span>
+                        Real-time Processing
+                    </span>
+                    <span class="footer-badge">
+                        <span class="badge-icon">🛡️</span>
+                        99.9% Uptime
+                    </span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <!-- Floating Particles Background -->
+    <div class="particles-container" id="particles-container"></div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <p class="loading-text">Processing Security Analysis...</p>
+        </div>
+    </div>
+
+    <script>
+        // Professional UI enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading overlay on page load
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+
+            // Mobile Navigation
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mainNav = document.getElementById('main-nav');
+            const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+
+            function toggleMobileMenu() {
+                mobileMenuToggle.classList.toggle('active');
+                mainNav.classList.toggle('active');
+                mobileNavOverlay.classList.toggle('active');
+                mobileNavOverlay.style.display = mobileNavOverlay.classList.contains('active') ? 'block' : 'none';
+
+                // Prevent body scroll when menu is open
+                document.body.style.overflow = mainNav.classList.contains('active') ? 'hidden' : '';
+            }
+
+            function closeMobileMenu() {
+                mobileMenuToggle.classList.remove('active');
+                mainNav.classList.remove('active');
+                mobileNavOverlay.classList.remove('active');
+                mobileNavOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            }
+
+            if (mobileNavOverlay) {
+                mobileNavOverlay.addEventListener('click', closeMobileMenu);
+            }
+
+            // Close mobile menu when nav link is clicked
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+
+            // Close mobile menu on window resize to desktop
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    closeMobileMenu();
+                }
+            });
+
+            // Close mobile menu on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+        // Show loading overlay for form submissions
+        function showLoading() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'flex';
+            }
+        }
+
+        // Enhanced Background Particles System
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            if (!container) return;
+
+            const particleCount = 50;
+            container.innerHTML = ''; // Clear existing particles
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random starting position
+                particle.style.left = Math.random() * 100 + 'vw';
+                
+                // Random animation delay
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                
+                // Random animation duration
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                
+                // Random opacity
+                particle.style.opacity = (0.1 + Math.random() * 0.3);
+                
+                // Random color variants
+                const colors = ['#00d4ff', '#8b5cf6', '#00ff88'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize particles
+        createParticles();
+
+        // Enhanced hover effects for cards
+        document.querySelectorAll('.professional-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Enhanced button interactions
+        document.querySelectorAll('.action-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Create ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Dynamic theme adjustment based on time of day
+        function adjustThemeByTime() {
+            const hour = new Date().getHours();
+            const root = document.documentElement;
+            
+            if (hour >= 6 && hour < 18) {
+                // Day theme - slightly lighter
+                root.style.setProperty('--bg-primary', '#0a0e13');
+                root.style.setProperty('--bg-secondary', '#151b23');
+            } else {
+                // Night theme - darker
+                root.style.setProperty('--bg-primary', '#0f1419');
+                root.style.setProperty('--bg-secondary', '#1a202c');
+            }
+        }
+
+        adjustThemeByTime();
+
+        // Enhanced scroll effects
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const header = document.querySelector('.main-header');
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                // Scrolling up
+                header.style.transform = 'translateY(0)';
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        // Add ripple effect styles dynamically
+        const rippleStyles = `
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                pointer-events: none;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+            }
+            
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = rippleStyles;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>

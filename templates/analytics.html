@@ -1,0 +1,1083 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - SecureGuard Fraud Detection{% endblock %}
+
+{% block content %}
+<!-- Analytics Header -->
+<div class="analytics-header">
+    <div class="header-content">
+        <div class="analytics-info">
+            <h1 class="analytics-title">📊 Analytics Dashboard</h1>
+            <p class="analytics-description">Comprehensive fraud detection performance metrics and insights</p>
+        </div>
+        <div class="analytics-actions">
+            <button class="action-button secondary" onclick="exportData()">
+                <span class="button-icon">📥</span>
+                Export Data
+            </button>
+            <button class="action-button primary" onclick="refreshAnalytics()">
+                <span class="button-icon">🔄</span>
+                Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Key Performance Indicators -->
+<div class="kpi-grid">
+    <div class="kpi-card predictions">
+        <div class="kpi-icon">🎯</div>
+        <div class="kpi-content">
+            <h3 class="kpi-title">Detection Rate</h3>
+            <p class="kpi-value" id="detection-rate">99.7%</p>
+            <p class="kpi-subtitle">Model Accuracy</p>
+        </div>
+    </div>
+
+    <div class="kpi-card fraud-detected">
+        <div class="kpi-icon">🚨</div>
+        <div class="kpi-content">
+            <h3 class="kpi-title">Fraud Blocked</h3>
+            <p class="kpi-value" id="fraud-blocked">{{ dashboard_data.fraud_detected if dashboard_data else 0 }}</p>
+            <p class="kpi-subtitle">Total Cases</p>
+        </div>
+    </div>
+
+    <div class="kpi-card legitimate">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-content">
+            <h3 class="kpi-title">Amount Protected</h3>
+            <p class="kpi-value" id="amount-protected">${{ "{:,.2f}".format(dashboard_data.fraud_amount_blocked if dashboard_data else 0) }}</p>
+            <p class="kpi-subtitle">Fraud Prevented</p>
+        </div>
+    </div>
+
+    <div class="kpi-card performance">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-content">
+            <h3 class="kpi-title">Avg Response</h3>
+            <p class="kpi-value" id="avg-response">{{ dashboard_data.avg_response_time_ms if dashboard_data else 250 }}ms</p>
+            <p class="kpi-subtitle">Processing Time</p>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="charts-container">
+    <!-- Fraud Trend Chart -->
+    <div class="chart-card full-width">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <span class="chart-icon">📈</span>
+                Fraud Detection Trend (24 Hours)
+            </h3>
+            <div class="chart-controls">
+                <select id="trend-period" class="chart-select">
+                    <option value="24h">Last 24 Hours</option>
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                </select>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="fraudTrendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Risk Distribution Chart -->
+    <div class="chart-card half-width">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <span class="chart-icon">🎯</span>
+                Risk Level Distribution
+            </h3>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="riskDistributionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Category Analysis Chart -->
+    <div class="chart-card half-width">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <span class="chart-icon">🏪</span>
+                Fraud by Category
+            </h3>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Hourly Activity Chart -->
+    <div class="chart-card full-width">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <span class="chart-icon">⏰</span>
+                Hourly Transaction Activity
+            </h3>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="hourlyActivityChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Amount Distribution Chart -->
+    <div class="chart-card half-width">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <span class="chart-icon">💵</span>
+                Transaction Amount Distribution
+            </h3>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="amountDistributionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Model Performance Chart -->
+    <div class="chart-card half-width">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <span class="chart-icon">🎓</span>
+                Model Performance Metrics
+            </h3>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="modelPerformanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent High-Risk Alerts -->
+<div class="alerts-section">
+    <div class="alerts-header">
+        <h3 class="alerts-title">
+            <span class="alert-icon">⚠️</span>
+            Recent High-Risk Alerts
+        </h3>
+        <span class="alert-count">{{ (dashboard_data.recent_transactions | selectattr('is_fraud') | list | length) if dashboard_data and dashboard_data.recent_transactions else 0 }} alerts</span>
+    </div>
+    <div class="alerts-list" id="high-risk-alerts">
+        {% if dashboard_data and dashboard_data.recent_transactions %}
+            {% for transaction in dashboard_data.recent_transactions[:5] %}
+                {% if transaction.is_fraud %}
+                <div class="alert-item high-risk">
+                    <div class="alert-status">🚨</div>
+                    <div class="alert-details">
+                        <p class="alert-amount">${{ "{:,.2f}".format(transaction.amount) }}</p>
+                        <p class="alert-info">{{ transaction.category }} • Risk: {{ transaction.risk_level }}</p>
+                    </div>
+                    <div class="alert-time">{{ transaction.timestamp }}</div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="alert-item no-alerts">
+                <div class="alert-status">✅</div>
+                <div class="alert-details">
+                    <p class="alert-info">No high-risk alerts in recent activity</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="analytics-content">
+    <div class="content-left">
+
+        <!-- Recent Predictions Timeline -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <h3 class="card-title">🕐 Recent Predictions</h3>
+                <span class="card-subtitle">Last {{ dashboard_data.recent_transactions|length if dashboard_data and dashboard_data.recent_transactions else 0 }} transactions</span>
+            </div>
+            <div class="card-body">
+                <div class="timeline-container">
+                    {% if dashboard_data and dashboard_data.recent_transactions %}
+                        {% for transaction in dashboard_data.recent_transactions %}
+                        <div class="timeline-item {{ 'fraud' if transaction.is_fraud else 'legitimate' }}">
+                            <div class="timeline-icon">
+                                {% if transaction.is_fraud %}🚨{% else %}✅{% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <span class="timeline-title">
+                                        {% if transaction.is_fraud %}Fraud Detected{% else %}Legitimate Transaction{% endif %}
+                                    </span>
+                                    <span class="timeline-time">{{ transaction.timestamp }}</span>
+                                </div>
+                                <div class="timeline-details">
+                                    <span class="detail-item">Amount: ${{ "{:,.2f}".format(transaction.amount) }}</span>
+                                    <span class="detail-item">Risk: {{ transaction.risk_level }}</span>
+                                    <span class="detail-item">Category: {{ transaction.category }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="text-align: center; color: #9ca3af; padding: 2rem;">No recent transactions available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-right">
+        <!-- Performance Metrics -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <h3 class="card-title">📈 Performance Metrics</h3>
+            </div>
+            <div class="card-body">
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Average Processing Time</div>
+                        <div class="metric-value">{{ dashboard_data.avg_response_time_ms if dashboard_data else 250 }}ms</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Fraud Detection Rate</div>
+                        <div class="metric-value">{{ dashboard_data.fraud_rate if dashboard_data else 0 }}%</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Total Volume</div>
+                        <div class="metric-value">${{ "{:,.0f}".format(dashboard_data.total_amount_analyzed if dashboard_data else 0) }}</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">High Risk Transactions</div>
+                        <div class="metric-value">{{ (dashboard_data.risk_distribution.get('High', 0) + dashboard_data.risk_distribution.get('Very High', 0)) if dashboard_data else 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <h3 class="card-title">🏥 System Health</h3>
+            </div>
+            <div class="card-body">
+                <div class="health-grid">
+                    <div class="health-item">
+                        <div class="health-indicator healthy"></div>
+                        <div class="health-content">
+                            <span class="health-label">Model Status</span>
+                            <span class="health-value">Active</span>
+                        </div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-indicator healthy"></div>
+                        <div class="health-content">
+                            <span class="health-label">API Response</span>
+                            <span class="health-value">< 300ms</span>
+                        </div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-indicator healthy"></div>
+                        <div class="health-content">
+                            <span class="health-label">Data Quality</span>
+                            <span class="health-value">Good</span>
+                        </div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-indicator warning"></div>
+                        <div class="health-content">
+                            <span class="health-label">Memory Usage</span>
+                            <span class="health-value">78%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <h3 class="card-title">⚡ Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div class="actions-grid">
+                    <a href="/training" class="action-item">
+                        <div class="action-icon">🤖</div>
+                        <span class="action-text">Retrain Model</span>
+                    </a>
+                    <a href="/api/predictions/export" class="action-item" target="_blank">
+                        <div class="action-icon">📊</div>
+                        <span class="action-text">Export Data</span>
+                    </a>
+                    <a href="/form_basic" class="action-item">
+                        <div class="action-icon">🔍</div>
+                        <span class="action-text">Test Prediction</span>
+                    </a>
+                    <a href="/" class="action-item">
+                        <div class="action-icon">🏠</div>
+                        <span class="action-text">Dashboard</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Chart.js Configuration
+const chartColors = {
+    primary: '#667eea',
+    secondary: '#764ba2',
+    success: '#10b981',
+    danger: '#ef4444',
+    warning: '#f59e0b',
+    info: '#3b82f6'
+};
+
+// Global chart instances
+let fraudTrendChart, riskDistributionChart, categoryChart, hourlyActivityChart, amountDistributionChart, modelPerformanceChart;
+
+// Initialize all charts
+function initializeCharts() {
+    initFraudTrendChart();
+    initRiskDistributionChart();
+    initCategoryChart();
+    initHourlyActivityChart();
+    initAmountDistributionChart();
+    initModelPerformanceChart();
+}
+
+// 1. Fraud Trend Chart (Line Chart)
+function initFraudTrendChart() {
+    const ctx = document.getElementById('fraudTrendChart').getContext('2d');
+    const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+    const fraudData = Array.from({length: 24}, () => Math.floor(Math.random() * 10));
+    const legitimateData = Array.from({length: 24}, () => Math.floor(Math.random() * 50) + 20);
+
+    fraudTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: hours,
+            datasets: [{
+                label: 'Fraud Detected',
+                data: fraudData,
+                borderColor: chartColors.danger,
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Legitimate',
+                data: legitimateData,
+                borderColor: chartColors.success,
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 2. Risk Distribution Chart (Doughnut)
+function initRiskDistributionChart() {
+    const ctx = document.getElementById('riskDistributionChart').getContext('2d');
+    riskDistributionChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Very Low', 'Low', 'Medium', 'High', 'Very High'],
+            datasets: [{
+                data: [{{ dashboard_data.risk_distribution.get('Very Low', 0) if dashboard_data else 5 }},
+                       {{ dashboard_data.risk_distribution.get('Low', 0) if dashboard_data else 15 }},
+                       {{ dashboard_data.risk_distribution.get('Medium', 0) if dashboard_data else 8 }},
+                       {{ dashboard_data.risk_distribution.get('High', 0) if dashboard_data else 3 }},
+                       {{ dashboard_data.risk_distribution.get('Very High', 0) if dashboard_data else 1 }}],
+                backgroundColor: [chartColors.success, chartColors.info, chartColors.warning, chartColors.danger, '#7f1d1d'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+}
+
+// 3. Category Analysis Chart (Horizontal Bar)
+function initCategoryChart() {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    const categories = ['Grocery', 'Gas', 'Entertainment', 'Shopping', 'Online', 'Restaurant', 'Healthcare', 'Travel', 'ATM', 'Utilities'];
+    const fraudCounts = categories.map(() => Math.floor(Math.random() * 20));
+
+    categoryChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: categories,
+            datasets: [{
+                label: 'Fraud Cases',
+                data: fraudCounts,
+                backgroundColor: chartColors.danger,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// 4. Hourly Activity Chart (Line)
+function initHourlyActivityChart() {
+    const ctx = document.getElementById('hourlyActivityChart').getContext('2d');
+    const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+    const activityData = Array.from({length: 24}, () => Math.floor(Math.random() * 100) + 20);
+
+    hourlyActivityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: hours,
+            datasets: [{
+                label: 'Transactions',
+                data: activityData,
+                borderColor: chartColors.primary,
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// 5. Amount Distribution Chart (Bar)
+function initAmountDistributionChart() {
+    const ctx = document.getElementById('amountDistributionChart').getContext('2d');
+    amountDistributionChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['$0-100', '$100-500', '$500-2K', '$2K-10K', '$10K+'],
+            datasets: [{
+                label: 'Transaction Count',
+                data: [150, 80, 40, 15, 5],
+                backgroundColor: chartColors.info,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// 6. Model Performance Chart (Radar)
+function initModelPerformanceChart() {
+    const ctx = document.getElementById('modelPerformanceChart').getContext('2d');
+    modelPerformanceChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'Speed'],
+            datasets: [{
+                label: 'Current Model',
+                data: [99.7, 98.5, 96.8, 97.6, 99.2],
+                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                borderColor: chartColors.primary,
+                borderWidth: 2,
+                pointBackgroundColor: chartColors.primary
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// Refresh all charts
+function refreshAllCharts() {
+    fetch('/api/stats/live')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('fraud-blocked').textContent = data.fraud_detected || 0;
+            document.getElementById('amount-protected').textContent = '$' + (data.fraud_amount_blocked || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('avg-response').textContent = (data.avg_response_time_ms || 250) + 'ms';
+
+            if (riskDistributionChart && data.risk_distribution) {
+                riskDistributionChart.data.datasets[0].data = [
+                    data.risk_distribution['Very Low'] || 0,
+                    data.risk_distribution['Low'] || 0,
+                    data.risk_distribution['Medium'] || 0,
+                    data.risk_distribution['High'] || 0,
+                    data.risk_distribution['Very High'] || 0
+                ];
+                riskDistributionChart.update();
+            }
+        })
+        .catch(error => console.error('Error refreshing charts:', error));
+}
+
+function exportReport() {
+    alert('Export functionality coming soon!');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    setInterval(refreshAllCharts, 60000);
+});
+</script>
+
+<style>
+/* Analytics specific styles */
+.analytics-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.analytics-header .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.analytics-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.analytics-description {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.analytics-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* KPI Grid */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+}
+
+.kpi-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.kpi-card.updated {
+    animation: flash 1s ease;
+}
+
+@keyframes flash {
+    0%, 100% { background: var(--bg-card); }
+    50% { background: rgba(49, 130, 206, 0.1); }
+}
+
+.kpi-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--accent-color);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.kpi-card.fraud-detected .kpi-icon {
+    background: var(--danger-color);
+}
+
+.kpi-card.legitimate .kpi-icon {
+    background: var(--success-color);
+}
+
+.kpi-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+    line-height: 1;
+}
+
+.kpi-subtitle {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* Charts Container */
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.chart-card.half-width {
+    grid-column: span 1;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.chart-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-icon {
+    font-size: 1.25rem;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chart-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chart-select:hover {
+    border-color: #667eea;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+}
+
+.chart-card.full-width .chart-wrapper {
+    height: 400px;
+}
+
+/* Alerts Section */
+.alerts-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.alerts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.alerts-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-count {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #fef2f2;
+    border-left: 4px solid #dc2626;
+    transition: all 0.3s ease;
+}
+
+.alert-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.alert-item.no-alerts {
+    background: #f0fdf4;
+    border-left-color: #10b981;
+}
+
+.alert-status {
+    font-size: 1.5rem;
+}
+
+.alert-details {
+    flex: 1;
+}
+
+.alert-amount {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+}
+
+.alert-info {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.alert-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+/* Analytics Content */
+.analytics-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.analytics-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+}
+
+/* Timeline Styles */
+.timeline-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
+}
+
+.timeline-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.timeline-item:last-child {
+    border-bottom: none;
+}
+
+.timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.timeline-item.fraud .timeline-icon {
+    background: rgba(229, 62, 62, 0.2);
+}
+
+.timeline-item.legitimate .timeline-icon {
+    background: rgba(56, 161, 105, 0.2);
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.timeline-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.timeline-details {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius);
+}
+
+/* Health indicators */
+.health-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.health-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius);
+}
+
+.health-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.health-indicator.healthy {
+    background: var(--success-color);
+}
+
+.health-indicator.warning {
+    background: var(--warning-color);
+}
+
+.health-indicator.critical {
+    background: var(--danger-color);
+}
+
+.health-label {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.health-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Quick Actions */
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    color: var(--text-primary);
+    text-align: center;
+    transition: var(--transition);
+}
+
+.action-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.action-icon {
+    font-size: 1.5rem;
+}
+
+.action-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .analytics-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-header .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .timeline-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

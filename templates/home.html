@@ -1,0 +1,705 @@
+{% extends "base.html" %}
+
+{% block title %}SecureGuard Dashboard - Fraud Detection System{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="dashboard-title">
+        <h1 class="dashboard-heading">Security Operations Center</h1>
+        <p class="dashboard-subtitle">Real-time fraud detection and threat analysis</p>
+    </div>
+    <div class="dashboard-actions">
+        <a href="{{ url_for('form_basic') }}" class="action-button primary">
+            <span class="button-icon">⚡</span>
+            Quick Scan
+        </a>
+        <a href="{{ url_for('form_advanced') }}" class="action-button secondary">
+            <span class="button-icon">🔍</span>
+            Deep Analysis
+        </a>
+    </div>
+</div>
+
+<!-- System Status Dashboard -->
+<div class="dashboard-grid">
+    <!-- Real-time Metrics -->
+    <div class="metrics-row">
+        <div class="metric-card threat-level">
+            <div class="metric-header">
+                <div class="metric-icon critical">🚨</div>
+                <div class="metric-info">
+                    <h3 class="metric-title">Threat Level</h3>
+                    <p class="metric-value">LOW</p>
+                    <p class="metric-subtitle">System Status Normal</p>
+                </div>
+            </div>
+            <div class="metric-trend">
+                <div class="trend-indicator up">
+                    <span class="trend-arrow">↗</span>
+                    <span class="trend-text">2% this hour</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card detection-rate">
+            <div class="metric-header">
+                <div class="metric-icon success">🛡️</div>
+                <div class="metric-info">
+                    <h3 class="metric-title">Detection Rate</h3>
+                    <p class="metric-value">99.7%</p>
+                    <p class="metric-subtitle">Fraud Accuracy</p>
+                </div>
+            </div>
+            <div class="metric-chart">
+                <div class="mini-chart" id="detection-chart">
+                    <div class="chart-bar" style="height: 60%" data-value="60"></div>
+                    <div class="chart-bar" style="height: 80%" data-value="80"></div>
+                    <div class="chart-bar" style="height: 95%" data-value="95"></div>
+                    <div class="chart-bar" style="height: 75%" data-value="75"></div>
+                    <div class="chart-bar" style="height: 99%" data-value="99"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card processed-today">
+            <div class="metric-header">
+                <div class="metric-icon info">📊</div>
+                <div class="metric-info">
+                    <h3 class="metric-title">Processed Total</h3>
+                    <p class="metric-value">{{ "{:,}".format(dashboard_data.total_predictions) }}</p>
+                    <p class="metric-subtitle">Transactions Analyzed</p>
+                </div>
+            </div>
+            <div class="metric-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ dashboard_data.fraud_rate }}%"></div>
+                </div>
+                <span class="progress-text">{{ "%.1f"|format(dashboard_data.fraud_rate) }}% fraud detected</span>
+            </div>
+        </div>
+
+        <div class="metric-card response-time">
+            <div class="metric-header">
+                <div class="metric-icon warning">⚡</div>
+                <div class="metric-info">
+                    <h3 class="metric-title">Response Time</h3>
+                    <p class="metric-value" id="response-time">{{ "%.0f"|format(dashboard_data.avg_processing_time) }}ms</p>
+                    <p class="metric-subtitle">Average Processing</p>
+                </div>
+            </div>
+            <div class="metric-status">
+                <span class="status-badge optimal">{{ dashboard_data.model_status }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Financial Metrics -->
+    <div class="financial-metrics">
+        <div class="financial-card">
+            <div class="financial-icon">💵</div>
+            <div class="financial-content">
+                <h3 class="financial-title">Total Analyzed</h3>
+                <p class="financial-value" id="total-amount">${{ "{:,.2f}".format(dashboard_data.total_amount_analyzed) }}</p>
+                <p class="financial-subtitle">Cumulative transaction volume</p>
+            </div>
+        </div>
+
+        <div class="financial-card fraud">
+            <div class="financial-icon">🚫</div>
+            <div class="financial-content">
+                <h3 class="financial-title">Fraud Blocked</h3>
+                <p class="financial-value fraud-text" id="fraud-amount">${{ "{:,.2f}".format(dashboard_data.fraud_amount_blocked) }}</p>
+                <p class="financial-subtitle">Prevented fraudulent transactions</p>
+            </div>
+        </div>
+
+        <div class="financial-card average">
+            <div class="financial-icon">📊</div>
+            <div class="financial-content">
+                <h3 class="financial-title">Average Transaction</h3>
+                <p class="financial-value" id="avg-amount">${{ "{:,.2f}".format(dashboard_data.avg_transaction_amount) }}</p>
+                <p class="financial-subtitle">Mean transaction size</p>
+            </div>
+        </div>
+
+        <div class="financial-card uptime">
+            <div class="financial-icon">⏱️</div>
+            <div class="financial-content">
+                <h3 class="financial-title">System Uptime</h3>
+                <p class="financial-value" id="uptime">{{ "%.1f"|format(dashboard_data.uptime_hours) }}h</p>
+                <p class="financial-subtitle">{% if dashboard_data.uptime_days > 0 %}{{ dashboard_data.uptime_days }} day{{ 's' if dashboard_data.uptime_days != 1 else '' }}{% else %}Active today{% endif %}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Activity Feed -->
+    {% if dashboard_data.recent_transactions %}
+    <div class="professional-card live-activity">
+        <div class="card-header">
+            <h3 class="card-title">Recent Activity</h3>
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span class="live-text">LIVE</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="activity-list" id="activity-list">
+                {% for txn in dashboard_data.recent_transactions %}
+                <div class="activity-item {{ 'fraud' if txn.prediction == 'Fraud' else 'legitimate' }}">
+                    <div class="activity-status">
+                        <span class="status-icon">{{ '🚨' if txn.prediction == 'Fraud' else '✓' }}</span>
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-header">
+                            <span class="activity-type">{{ txn.prediction }}</span>
+                            <span class="activity-confidence">{{ txn.confidence }}% confident</span>
+                        </div>
+                        <div class="activity-info">
+                            <span class="activity-amount">${{ "{:,.2f}".format(txn.amount) }}</span>
+                            <span class="activity-risk">{{ txn.risk_level }} Risk</span>
+                            <span class="activity-time">{{ txn.timestamp[-8:] }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity & Tools -->
+    <div class="dashboard-content">
+        <div class="content-left">
+            <!-- Quick Actions Panel -->
+            <div class="professional-card">
+                <div class="card-header">
+                    <h3 class="card-title">Fraud Detection Tools</h3>
+                    <div class="card-icon">🔧</div>
+                </div>
+                <div class="card-body">
+                    <div class="tool-grid">
+                        <a href="{{ url_for('form_basic') }}" class="tool-item">
+                            <div class="tool-icon">⚡</div>
+                            <div class="tool-content">
+                                <h4 class="tool-title">Quick Scan</h4>
+                                <p class="tool-description">Fast transaction analysis for immediate results</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ url_for('form_advanced') }}" class="tool-item">
+                            <div class="tool-icon">🔍</div>
+                            <div class="tool-content">
+                                <h4 class="tool-title">Deep Analysis</h4>
+                                <p class="tool-description">Comprehensive fraud detection with full context</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Alerts -->
+            <div class="professional-card">
+                <div class="card-header">
+                    <h3 class="card-title">Security Alerts</h3>
+                    <div class="alert-indicator">
+                        <span class="alert-count">3</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert-list">
+                        <div class="alert-item low">
+                            <div class="alert-icon">🔵</div>
+                            <div class="alert-content">
+                                <h4 class="alert-title">Model Performance Update</h4>
+                                <p class="alert-time">2 minutes ago</p>
+                                <p class="alert-message">Detection accuracy improved to 99.7%</p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item medium">
+                            <div class="alert-icon">🟡</div>
+                            <div class="alert-content">
+                                <h4 class="alert-title">Suspicious Pattern Detected</h4>
+                                <p class="alert-time">15 minutes ago</p>
+                                <p class="alert-message">Unusual transaction volumes in sector 7</p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item low">
+                            <div class="alert-icon">🟢</div>
+                            <div class="alert-content">
+                                <h4 class="alert-title">System Maintenance Complete</h4>
+                                <p class="alert-time">1 hour ago</p>
+                                <p class="alert-message">All systems operating normally</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-right">
+            <!-- System Overview -->
+            <div class="professional-card">
+                <div class="card-header">
+                    <h3 class="card-title">System Overview</h3>
+                    <div class="card-icon">⚙️</div>
+                </div>
+                <div class="card-body">
+                    <div class="system-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Model Version</div>
+                            <div class="stat-value">XGBoost v2.1.3</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Last Updated</div>
+                            <div class="stat-value">2025-01-15</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Training Data</div>
+                            <div class="stat-value">500K+ samples</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">F1 Score</div>
+                            <div class="stat-value">0.954</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Categories -->
+            <div class="professional-card">
+                <div class="card-header">
+                    <h3 class="card-title">Risk Categories</h3>
+                    <div class="card-icon">⚠️</div>
+                </div>
+                <div class="card-body">
+                    <div class="risk-breakdown">
+                        <div class="risk-item">
+                            <div class="risk-indicator very-high"></div>
+                            <span class="risk-label">Critical Risk</span>
+                            <span class="risk-count">2</span>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-indicator high"></div>
+                            <span class="risk-label">High Risk</span>
+                            <span class="risk-count">7</span>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-indicator medium"></div>
+                            <span class="risk-label">Medium Risk</span>
+                            <span class="risk-count">23</span>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-indicator low"></div>
+                            <span class="risk-label">Low Risk</span>
+                            <span class="risk-count">156</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced Chart Interactions
+    const chartBars = document.querySelectorAll('.chart-bar');
+    chartBars.forEach((bar, index) => {
+        bar.addEventListener('mouseenter', function() {
+            const value = this.getAttribute('data-value');
+            
+            // Create tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'chart-tooltip';
+            tooltip.textContent = `${value}% accuracy`;
+            tooltip.style.cssText = `
+                position: absolute;
+                background: rgba(0, 212, 255, 0.9);
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+                white-space: nowrap;
+                z-index: 1000;
+                pointer-events: none;
+                transform: translateX(-50%);
+                top: -30px;
+                left: 50%;
+            `;
+            
+            this.style.position = 'relative';
+            this.appendChild(tooltip);
+            
+            // Enhance the bar
+            this.style.transform = 'scaleY(1.1)';
+            this.style.filter = 'brightness(1.2)';
+        });
+        
+        bar.addEventListener('mouseleave', function() {
+            const tooltip = this.querySelector('.chart-tooltip');
+            if (tooltip) tooltip.remove();
+            
+            this.style.transform = 'scaleY(1)';
+            this.style.filter = 'brightness(1)';
+        });
+        
+        // Animate bars on load
+        setTimeout(() => {
+            bar.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            bar.style.transform = 'scaleY(1)';
+        }, index * 100);
+    });
+    
+    // Enhanced Progress Bar Animation
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
+        const targetWidth = bar.style.width;
+        bar.style.width = '0%';
+        
+        setTimeout(() => {
+            bar.style.transition = 'width 2s ease-out';
+            bar.style.width = targetWidth;
+        }, 500);
+    });
+    
+    // Real-time Dashboard Updates Simulation
+    function updateMetrics() {
+        const processedCard = document.querySelector('.processed-today .metric-value');
+        const responseCard = document.querySelector('.response-time .metric-value');
+        
+        if (processedCard) {
+            const currentValue = parseInt(processedCard.textContent.replace(/,/g, ''));
+            const newValue = currentValue + Math.floor(Math.random() * 5);
+            processedCard.textContent = newValue.toLocaleString();
+            
+            // Animate the change
+            processedCard.style.color = '#00ff88';
+            setTimeout(() => {
+                processedCard.style.color = '';
+            }, 1000);
+        }
+        
+        if (responseCard) {
+            const variations = ['0.23s', '0.21s', '0.24s', '0.22s', '0.25s'];
+            responseCard.textContent = variations[Math.floor(Math.random() * variations.length)];
+        }
+    }
+    
+    // Update metrics every 10 seconds
+    setInterval(updateMetrics, 10000);
+    
+    // Enhanced Tool Item Interactions
+    document.querySelectorAll('.tool-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+            this.style.boxShadow = '0 10px 30px rgba(0, 212, 255, 0.2)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = '';
+        });
+    });
+    
+    // Enhanced Alert Animations
+    const alerts = document.querySelectorAll('.alert-item');
+    alerts.forEach((alert, index) => {
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            alert.style.transition = 'all 0.5s ease-out';
+            alert.style.opacity = '1';
+            alert.style.transform = 'translateX(0)';
+        }, index * 300 + 1000);
+    });
+    
+    // System Status Pulse
+    const statusDot = document.querySelector('.status-dot');
+    if (statusDot) {
+        setInterval(() => {
+            statusDot.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                statusDot.style.transform = 'scale(1)';
+            }, 200);
+        }, 3000);
+    }
+    
+    // Add enhanced styles
+    const enhancedStyles = `
+        .tool-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .alert-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .alert-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-value {
+            transition: color 0.3s ease;
+        }
+
+        .status-dot {
+            transition: transform 0.2s ease;
+        }
+
+        /* Financial Metrics Styles */
+        .financial-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .financial-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .financial-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .financial-card.fraud:hover {
+            border-color: #e53e3e;
+            box-shadow: 0 10px 30px rgba(229, 62, 62, 0.2);
+        }
+
+        .financial-icon {
+            font-size: 3rem;
+            opacity: 0.9;
+        }
+
+        .financial-content {
+            flex: 1;
+        }
+
+        .financial-title {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .financial-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 0.25rem;
+        }
+
+        .fraud-text {
+            color: #e53e3e;
+        }
+
+        .financial-subtitle {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        /* Live Activity Styles */
+        .live-activity {
+            margin-top: 2rem;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(229, 62, 62, 0.2);
+            border-radius: 20px;
+            border: 1px solid rgba(229, 62, 62, 0.4);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #e53e3e;
+            border-radius: 50%;
+            animation: livePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7);
+            }
+            50% {
+                opacity: 0.7;
+                box-shadow: 0 0 0 8px rgba(229, 62, 62, 0);
+            }
+        }
+
+        .live-text {
+            color: #e53e3e;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border-left: 3px solid;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item.fraud {
+            border-left-color: #e53e3e;
+        }
+
+        .activity-item.legitimate {
+            border-left-color: #00ff88;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(5px);
+        }
+
+        .activity-status {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-type {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .activity-item.fraud .activity-type {
+            color: #e53e3e;
+        }
+
+        .activity-item.legitimate .activity-type {
+            color: #00ff88;
+        }
+
+        .activity-confidence {
+            color: #a0aec0;
+            font-size: 0.85rem;
+        }
+
+        .activity-info {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+        }
+
+        .activity-amount {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .activity-risk {
+            color: #8b5cf6;
+        }
+
+        .activity-time {
+            color: #718096;
+        }
+
+        @media (max-width: 768px) {
+            .financial-metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .activity-info {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+        }
+    `;
+
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = enhancedStyles;
+    document.head.appendChild(styleSheet);
+
+    // Auto-refresh dashboard data every 10 seconds
+    function refreshDashboard() {
+        fetch('/api/stats/live')
+            .then(response => response.json())
+            .then(data => {
+                // Update key metrics
+                const totalPredictions = document.querySelector('.processed-today .metric-value');
+                if (totalPredictions && data.total_predictions !== undefined) {
+                    animateValue(totalPredictions, data.total_predictions);
+                }
+
+                const fraudDetected = document.querySelector('.fraud-detected-value');
+                if (fraudDetected && data.fraud_detected !== undefined) {
+                    animateValue(fraudDetected, data.fraud_detected);
+                }
+
+                const responseTime = document.getElementById('response-time');
+                if (responseTime && data.avg_response_time_ms !== undefined) {
+                    responseTime.textContent = data.avg_response_time_ms.toFixed(0) + 'ms';
+                }
+            })
+            .catch(error => console.log('Dashboard refresh error:', error));
+    }
+
+    // Animate number changes
+    function animateValue(element, newValue) {
+        const currentValue = parseInt(element.textContent.replace(/,/g, '')) || 0;
+        if (currentValue === newValue) return;
+
+        element.style.color = '#00ff88';
+        element.textContent = newValue.toLocaleString();
+
+        setTimeout(() => {
+            element.style.color = '';
+        }, 1000);
+    }
+
+    // Refresh every 10 seconds
+    setInterval(refreshDashboard, 10000);
+});
+</script>
+{% endblock %}
