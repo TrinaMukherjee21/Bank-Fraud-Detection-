@@ -16,4 +16,4 @@ pandas==2.1.1
 
 # Environment Configuration
 python-dotenv==1.0.0
-xgboost==1.7.6
+xgboost==1.5.0
