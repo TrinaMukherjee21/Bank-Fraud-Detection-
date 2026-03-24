@@ -16,13 +16,11 @@ warnings.filterwarnings('ignore')
 
 # Machine Learning imports
 from sklearn.model_selection import (
-    train_test_split, StratifiedKFold, cross_val_score, 
-    GridSearchCV, RandomizedSearchCV
+    train_test_split, cross_val_score, RandomizedSearchCV
 )
-from sklearn.preprocessing import LabelEncoder, StandardScaler, RobustScaler
+from sklearn.preprocessing import LabelEncoder, RobustScaler
 from sklearn.metrics import (
-    classification_report, f1_score, precision_score, recall_score,
-    roc_auc_score, precision_recall_curve, roc_curve, confusion_matrix
+    f1_score, precision_score, recall_score, roc_auc_score
 )
 from sklearn.ensemble import IsolationForest
 from sklearn.feature_selection import SelectKBest, f_classif
@@ -34,13 +32,10 @@ from catboost import CatBoostClassifier
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 
 # Imbalanced learning
-from imblearn.combine import SMOTEENN, SMOTETomek
-from imblearn.over_sampling import SMOTE, ADASYN
-from imblearn.under_sampling import EditedNearestNeighbours
+from imblearn.combine import SMOTEENN
 
 # Visualization
 import matplotlib.pyplot as plt
-import seaborn as sns
 # Note: plot_confusion_matrix, plot_roc_curve, plot_precision_recall_curve are deprecated
 # Using matplotlib directly for plotting
 
@@ -583,8 +578,12 @@ class FraudDetectionTrainer:
         try:
             # Save best model
             if self.best_model:
-                model_path = os.path.join(model_dir, "fraud_model.pkl")
-                joblib.dump(self.best_model, model_path)
+                if type(self.best_model).__name__ == 'XGBClassifier':
+                    model_path = os.path.join(model_dir, "fraud_model.json")
+                    self.best_model.save_model(model_path)
+                else:
+                    model_path = os.path.join(model_dir, "fraud_model.pkl")
+                    joblib.dump(self.best_model, model_path)
                 saved_files['model'] = model_path
             
             # Save encoders

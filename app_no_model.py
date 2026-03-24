@@ -20,19 +20,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-print("DEBUG: Initializing Flask app...")
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', os.urandom(32).hex())
-print("DEBUG: Flask app initialized. Setting up LoginManager...")
 
 # Initialize Flask-Login
 login_manager = LoginManager()
-print("DEBUG: login_manager object created. init_app(app)...")
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'warning'
-print("DEBUG: login_manager initialized.")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -42,54 +38,19 @@ def load_user(user_id):
 # Load trained model and encoders
 MODEL_DIR = "model"
 try:
-    # Try loading JSON (native format) first
-    json_path = os.path.join(MODEL_DIR, "fraud_model.json")
-    pkl_path = os.path.join(MODEL_DIR, "fraud_model.pkl")
-    
-    print("DEBUG: Using mock XGBoost model...")
-    XGB_AVAILABLE = False
-    class XGBClassifier:
+    print("DEBUG: Mocking model loading...")
+    class MockModel:
+        def predict(self, X): return [0]
+        def predict_proba(self, X): return [[0.9, 0.1]]
         def load_model(self, path): pass
-        def predict_proba(self, X): return np.array([[0.9, 0.1]])
-
-    model = XGBClassifier()
-    if os.path.exists(json_path):
-        if XGB_AVAILABLE:
-            print(f"DEBUG: Found JSON model at {json_path}. Loading JSON model...")
-            model = XGBClassifier()
-            model.load_model(json_path)
-            print("DEBUG: XGBoost JSON model loaded successfully")
-            logger.info("XGBoost JSON model loaded successfully")
-        else:
-            print(f"DEBUG: JSON model found at {json_path}, but xgboost is not available. Cannot load JSON model.")
-            logger.warning(f"JSON model found at {json_path}, but xgboost is not available. Cannot load JSON model.")
-    elif os.path.exists(pkl_path):
-        print(f"DEBUG: JSON model not found. Found pkl model at {pkl_path}. Loading with joblib...")
-        model = joblib.load(pkl_path)
-        print("DEBUG: Pickle model loaded successfully")
-        logger.info("Pickle model loaded successfully")
-    else:
-        print("DEBUG: No model file found!")
-        logger.warning("No model file found in model/ directory")
-        model = None
-        
-    print("DEBUG: Loading encoders and threshold...")
-    try:
-        if SKLEARN_AVAILABLE:
-            label_encoders = joblib.load(os.path.join(MODEL_DIR, "label_encoders.pkl"))
-            threshold = joblib.load(os.path.join(MODEL_DIR, "threshold.pkl"))
-            print("DEBUG: Encoders and threshold loaded successfully")
-        else:
-            raise ImportError("SKLEARN_AVAILABLE is False, skipping pkl load.")
-    except Exception as e:
-        print(f"DEBUG: Using mock encoders and threshold (Error: {e})")
-        label_encoders = {}
-        threshold = 0.5
-    
-    logger.info("Encoders and threshold handled")
+    model = MockModel()
+    label_encoders = {}
+    threshold = 0.5
+    print("DEBUG: Model mocked. Encoders and threshold set.")
+    logger.info("Encoders and threshold mocked successfully")
 except Exception as e:
-    print(f"DEBUG: Error loading model: {e}")
-    logger.error(f"Error loading model: {str(e)}")
+    print(f"DEBUG: Error mocking model: {e}")
+    logger.error(f"Error mocking model: {str(e)}")
     model = None
     label_encoders = None
     threshold = 0.5
@@ -638,11 +599,10 @@ def internal_error_handler(e):
                          error="Internal server error. Please contact administrator."), 500
 
 if __name__ == '__main__':
-    debug_mode = False  # Forced off for stability
+    debug_mode = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     port = int(os.environ.get('PORT', 5000))
     host = os.environ.get('HOST', '127.0.0.1')
 
-    print(f"DEBUG: Starting Flask app at {host}:{port} (debug=False, use_reloader=False)")
     logger.info(f"Starting SecureGuard Fraud Detection System")
     logger.info(f"Server: {host}:{port}, Debug: {debug_mode}")
-    app.run(host=host, port=port, debug=False, use_reloader=False)
+    app.run(host=host, port=port, debug=debug_mode)

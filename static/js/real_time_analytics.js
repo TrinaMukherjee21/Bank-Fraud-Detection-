@@ -254,7 +254,7 @@ class RealTimeAnalytics {
         try {
             const [statsResponse, recentResponse] = await Promise.all([
                 fetch('/api/stats'),
-                fetch('/api/recent-predictions?limit=20')
+                fetch('/api/transactions/recent?limit=20')
             ]);
 
             if (statsResponse.ok) {

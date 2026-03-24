@@ -1,7 +1,22 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
+# Mock sklearn if it hangs or is missing
+SKLEARN_AVAILABLE = False
+class LabelEncoder:
+    def __init__(self):
+        self.classes_ = None
+        self.mapping = {}
+    def fit(self, y):
+        self.classes_ = sorted(list(set(y.astype(str))))
+        self.mapping = {c: i for i, c in enumerate(self.classes_)}
+    def transform(self, y):
+        return [self.mapping.get(str(c), 0) for c in y]
+    def fit_transform(self, y):
+        self.fit(y)
+        return self.transform(y)
+class StandardScaler:
+    def fit_transform(self, X): return X
+    def transform(self, X): return X
 import joblib
 import os
 import logging

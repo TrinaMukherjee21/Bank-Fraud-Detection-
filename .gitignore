@@ -24,6 +24,18 @@ catboost_info/
 venv/
 env/
 .venv/
+.venv_new/
+
+# Logs and temp files
+*.log
+import_trace.txt
+output.txt
+cookies.txt
+app_error.log
+app_output.log
+fraud_detection.log
+import_error.log
+fraud_detection.db
 
 # OS generated files
 .DS_Store
