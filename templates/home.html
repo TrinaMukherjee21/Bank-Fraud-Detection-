@@ -146,9 +146,9 @@
         <div class="card-body">
             <div class="activity-list" id="activity-list">
                 {% for txn in dashboard_data.recent_transactions %}
-                <div class="activity-item {{ 'fraud' if txn.prediction == 'Fraud' else 'legitimate' }}">
+                <div class="activity-item {{ 'fraud' if txn.prediction == 'Fraud' else 'warning' if txn.prediction == 'Moderate' else 'legitimate' }}">
                     <div class="activity-status">
-                        <span class="status-icon">{{ '🚨' if txn.prediction == 'Fraud' else '✓' }}</span>
+                        <span class="status-icon">{{ '🚨' if txn.prediction == 'Fraud' else '⚠️' if txn.prediction == 'Moderate' else '✓' }}</span>
                     </div>
                     <div class="activity-details">
                         <div class="activity-header">
@@ -158,7 +158,7 @@
                         <div class="activity-info">
                             <span class="activity-amount">${{ "{:,.2f}".format(txn.amount) }}</span>
                             <span class="activity-risk">{{ txn.risk_level }} Risk</span>
-                            <span class="activity-time">{{ txn.timestamp[-8:] }}</span>
+                            <span class="activity-time">{{ txn.timestamp }}</span>
                         </div>
                     </div>
                 </div>
@@ -583,6 +583,10 @@ document.addEventListener('DOMContentLoaded', function() {
             border-left-color: #00ff88;
         }
 
+        .activity-item.warning {
+            border-left-color: #f6ad55;
+        }
+
         .activity-item:hover {
             background: rgba(255, 255, 255, 0.06);
             transform: translateX(5px);
@@ -618,6 +622,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         .activity-item.legitimate .activity-type {
             color: #00ff88;
+        }
+
+        .activity-item.warning .activity-type {
+            color: #f6ad55;
         }
 
         .activity-confidence {

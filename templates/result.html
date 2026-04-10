@@ -23,15 +23,17 @@
 <!-- Threat Assessment Dashboard -->
 <div class="threat-dashboard">
     <!-- Primary Threat Indicator -->
-    <div class="threat-panel {{ 'threat-detected' if prediction == 1 else 'threat-clear' }}">
+    <div class="threat-panel {{ 'threat-detected' if prediction == 1 else 'threat-warning' if risk_level == 'Medium' else 'threat-clear' }}">
         <div class="threat-header">
-            <div class="threat-icon {{ 'critical' if prediction == 1 else 'secure' }}">
-                {% if prediction == 1 %}🚨{% else %}🛡️{% endif %}
+            <div class="threat-icon {{ 'critical' if prediction == 1 else 'warning' if risk_level == 'Medium' else 'secure' }}">
+                {% if prediction == 1 %}🚨{% elif risk_level == 'Medium' %}⚠️{% else %}🛡️{% endif %}
             </div>
             <div class="threat-info">
                 <h2 class="threat-status">
                     {% if prediction == 1 %}
                         THREAT DETECTED
+                    {% elif risk_level == 'Medium' %}
+                        MODERATE RISK
                     {% else %}
                         LEGITIMATE TRANSACTION
                     {% endif %}
@@ -39,6 +41,8 @@
                 <p class="threat-subtitle">
                     {% if prediction == 1 %}
                         Fraudulent activity identified - immediate action required
+                    {% elif risk_level == 'Medium' %}
+                        Potential anomaly detected - monitoring recommended
                     {% else %}
                         Transaction cleared - no suspicious activity detected
                     {% endif %}
