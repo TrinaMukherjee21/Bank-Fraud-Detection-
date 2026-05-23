@@ -76,12 +76,9 @@ try:
         
     print("DEBUG: Loading encoders and threshold...")
     try:
-        if SKLEARN_AVAILABLE:
-            label_encoders = joblib.load(os.path.join(MODEL_DIR, "label_encoders.pkl"))
-            threshold = joblib.load(os.path.join(MODEL_DIR, "threshold.pkl"))
-            print("DEBUG: Encoders and threshold loaded successfully")
-        else:
-            raise ImportError("SKLEARN_AVAILABLE is False, skipping pkl load.")
+        label_encoders = joblib.load(os.path.join(MODEL_DIR, "label_encoders.pkl"))
+        threshold = joblib.load(os.path.join(MODEL_DIR, "threshold.pkl"))
+        print("DEBUG: Encoders and threshold loaded successfully")
     except Exception as e:
         print(f"DEBUG: Using mock encoders and threshold (Error: {e})")
         label_encoders = {}
@@ -800,7 +797,7 @@ def internal_error_handler(e):
 if __name__ == '__main__':
     debug_mode = False  # Forced off for stability
     port = int(os.environ.get('PORT', 5000))
-    host = os.environ.get('HOST', '127.0.0.1')
+    host = os.environ.get('HOST', '0.0.0.0')
 
     print(f"DEBUG: Starting Flask app at {host}:{port} (debug=False, use_reloader=False)")
     logger.info(f"Starting SecureGuard Fraud Detection System")
