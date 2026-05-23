@@ -9,8 +9,14 @@ import os
 import logging
 from contextlib import contextmanager
 from typing import Optional, Dict, Any, List
-import mysql.connector
-from mysql.connector import pooling
+try:
+    import mysql.connector
+    from mysql.connector import pooling
+    MYSQL_AVAILABLE = True
+except ImportError:
+    MYSQL_AVAILABLE = False
+    mysql = None
+    pooling = None
 import sqlite3
 from datetime import datetime, timedelta
 
